@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar">
     <div class="logo-area">
-      <h1 class="logo-text">HYUNDAI</h1> 
+      <img src="@/assets/images/logo.png" style="width: 103px; height: 62px;" alt="HYUNDAI Logo" class="logo-image" />
     </div>
 
     <nav class="menu-nav">
@@ -46,7 +46,7 @@ export default {
 
 <style scoped>
 .sidebar {
-  width: 250px;
+  width: 280px;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -54,7 +54,8 @@ export default {
 }
 
 .logo-area {
-  padding: 40px 20px;
+  padding-top: 44px;
+  padding-bottom: 90px;
   text-align: center;
 }
 
@@ -92,8 +93,7 @@ export default {
 .active-menu {
   background-color: #002c5f !important;
   color: #ffffff !important;
-  border-radius: 0 20px 20px 0; /* 우측 라운드 처리 */
-  margin-right: 20px;
+  border-radius: 20px; /* 우측 라운드 처리 */
 }
 
 .logout-area {
