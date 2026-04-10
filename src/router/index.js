@@ -20,9 +20,9 @@ const routes = [
     children: [
       { path: 'permission', name: 'Permission', component: () => import('@/views/admin/Permission.vue') },
       // BOM 조회, 자재 관리 등 추가 예정
-      { path: 'order', name: 'Order', component: () => import('@/layouts/OrderLayout.vue') },
-      { path: 'bom', name: 'Bom', component: () => import('@/layouts/BOMLayout.vue') },
-      { path: 'material', name: 'Material', component: () => import('@/layouts/MaterialLayout.vue') }
+      { path: 'order', name: 'Order', component: () => import('@/views/Order.vue') },
+      { path: 'bom', name: 'Bom', component: () => import('@/views/BOM.vue') },
+      { path: 'material', name: 'Material', component: () => import('@/views/Material.vue') }
     ]
   }
 ]
