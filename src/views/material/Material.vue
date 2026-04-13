@@ -15,21 +15,27 @@
         <p class="stat-value">{{ summary.total }}<span class="unit">개</span></p>
       </article>
       <article class="stat-card">
-        <p class="stat-label">⚠️ 안전재고 이하 품목</p>
+        <p class="stat-label">안전재고 이하 품목</p>
         <p class="stat-value stat-danger">{{ summary.danger }}<span class="unit">개</span></p>
       </article>
       <article class="stat-card">
-        <p class="stat-label">⚡ 주문 대응 필요 품목</p>
+        <p class="stat-label">주문 대응 필요 품목</p>
         <p class="stat-value stat-warning">{{ summary.shortage }}<span class="unit">개</span></p>
       </article>
       <article class="stat-card">
         <p class="stat-label">정상 자재</p>
-        <p class="stat-value stat-ok">{{ summary.ok }}<span class="unit">개</span></p>
+        <p class="stat-value stat-normal">{{ summary.normal }}<span class="unit">개</span></p>
       </article>
     </section>
 
-    <div v-if="summary.danger > 0" class="warning-banner">
-      안전재고 이하입니다. 즉시 발주 또는 생산 계획 조정이 필요합니다.
+    <div v-if="summary.danger > 0" class="danger-banner">
+      특정 자재가 안전재고 이하입니다. 즉시 발주 또는 생산 계획 조정이 필요합니다.
+    </div>
+    <div v-else-if="summary.shortage > 0" class="shortage-banner">
+      특정 자재가 부족합니다. 즉시 발주 또는 생산 계획 조정이 필요합니다.
+    </div>
+    <div v-else class="normal-banner">
+      모든 자재가 적정 재고 수준에 있습니다.
     </div>
     <div class="filter-bar">
       <div class="filter-input-wrap">
@@ -58,10 +64,10 @@
           <option value="all">전체</option>
           <option value="danger">위험</option>
           <option value="shortage">부족</option>
-          <option value="ok">적정</option>
+          <option value="normal">정상</option>
         </select>
       </label>
-      <button type="button" class="btn btn-primary btn-search" @click="applyFilters">검색</button>
+      <button type="button" class="btn btn-outline btn-search" @click="applyFilters">검색</button>
     </div>
 
     <div class="table-card">
@@ -140,7 +146,7 @@
                 <div class="action-group">
                   <button
                     type="button"
-                    class="btn btn-primary btn-order"
+                    class="btn btn-outline btn-order"
                     :disabled="row.requiredStock <= 0"
                     @click="requestOrder(row.materialId)"
                   >
@@ -238,7 +244,7 @@ export default {
         total: rows.length,
         danger,
         shortage,
-        ok: rows.filter((r) => r.status === 'ok').length
+        normal: rows.filter((r) => r.status === 'normal').length
       }
     },
     filteredRows() {
@@ -254,7 +260,7 @@ export default {
       }
       if (status === 'danger') list = list.filter((r) => r.status === 'danger')
       if (status === 'shortage') list = list.filter((r) => r.status === 'shortage')
-      if (status === 'ok') list = list.filter((r) => r.status === 'ok')
+      if (status === 'normal') list = list.filter((r) => r.status === 'normal')
 
       const key = this.sortKey
       const dir = this.sortDir === 'asc' ? 1 : -1
@@ -323,7 +329,7 @@ export default {
     statusClass(status) {
       if (status === 'danger') return 'badge-danger'
       if (status === 'shortage') return 'badge-warning'
-      return 'badge-success'
+      return 'badge-normal'
     },
     formatCurrency(value) {
       return new Intl.NumberFormat('ko-KR', {
@@ -396,7 +402,7 @@ export default {
   font-family: inherit;
 }
 
-.btn-primary {
+/* .btn-primary {
   background: #fff;
   color: #333;
   border-color: #dee2e6;
@@ -405,7 +411,7 @@ export default {
 .btn-primary:hover {
   background-color: #001a3d;
   border-color: #001a3d;
-}
+} */
 
 .btn-outline {
   background: #fff;
@@ -484,28 +490,48 @@ export default {
 }
 
 .stat-shortage {
-  color: #dc3545;
+  color: #E63312;
 }
 
 .stat-danger {
-  color: #dc3545;
+  color: #E63312;
 }
 
 .stat-warning {
-  color: #f59f00;
+  color: #f19985;
 }
 
-.stat-ok {
-  color: #28a745;
+.stat-normal {
+  color: #00aad2;
 }
 
-.warning-banner {
+.danger-banner {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #f6b8aa;
+  background: #fdebe7;
+  color: #c2412d;
+  font-weight: 600;
+}
+
+.shortage-banner {
   margin-bottom: 16px;
   padding: 14px 16px;
   border-radius: 12px;
   border: 1px solid #ffd8a8;
   background: #fff4e6;
   color: #9c4f00;
+  font-weight: 600;
+}
+
+.normal-banner {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #a6dbe8;
+  background: #e6f6fb;
+  color: #007fa3;
   font-weight: 600;
 }
 
@@ -666,11 +692,11 @@ export default {
 }
 
 .row-danger {
-  background-color: #fff5f5;
+  background-color: #fbd6cf;
 }
 
 .row-shortage {
-  background-color: #fff9db;
+  background-color: #fdebe7;
 }
 
 .badge {
@@ -682,16 +708,16 @@ export default {
   color: #fff;
 }
 
-.badge-success {
-  background-color: #28a745;
+.badge-normal {
+  background-color: #00aad2;
 }
 
 .badge-danger {
-  background-color: #dc3545;
+  background-color: #e63312;
 }
 
 .badge-warning {
-  background-color: #f59f00;
+  background-color: #f19985;
   color: #fff;
 }
 

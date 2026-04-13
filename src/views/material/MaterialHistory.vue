@@ -129,23 +129,23 @@ export default {
 }
 
 .change-badge.in {
-  background: #2b8a3e;
+  background: #00aad2;
 }
 
 .change-badge.out {
-  background: #f08c00;
+  background: #E63312;
 }
 
 .change-badge.adjust {
-  background: #5f3dc4;
+  background: #f19985;
 }
 
 .plus {
-  color: #2b8a3e;
+  color: #00aad2;
 }
 
 .minus {
-  color: #dc3545;
+  color: #E63312;
 }
 
 @media (max-width: 768px) {
