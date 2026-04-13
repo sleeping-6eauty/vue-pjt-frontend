@@ -2,6 +2,9 @@
   <div class="permission-page">
     <h2>이용자 목록</h2>
     
+    <div v-if="error" class="error-message">{{ error }}</div>
+    <div v-if="loading" class="loading">로딩 중...</div>
+    
     <div class="tabs">
       <button :class="{ active: currentTab === 'all' }" @click="currentTab = 'all'">
         전체
@@ -17,7 +20,7 @@
     <div class="search-bar">
       <select v-model="searchType">
         <option value="name">이름</option>
-        <option value="empId">사번</option>
+        <option value="employee_id">사번</option>
       </select>
       <input type="text" v-model="searchKeyword" placeholder="검색 내용" />
     </div>
@@ -28,18 +31,18 @@
           <th>사번</th>
           <th>이름</th>
           <th>이메일</th>
-          <th>역할/액션</th>
+          <th>역할</th>
           <th v-if="currentTab === 'all'">상태</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="user in filteredUsers" :key="user.id">
-          <td>{{ user.empId }}</td>
+          <td>{{ user.employee_id }}</td>
           <td>{{ user.name }}</td>
           <td>{{ user.email }}</td>
           
           <td v-if="currentTab === 'all'">
-            <select v-model="user.role" class="role-select">
+            <select v-model="user.role" class="role-select" @change="handleRoleChange(user.id, user.role)">
               <option value="User">User</option>
               <option value="Admin">Admin</option>
             </select>
@@ -53,7 +56,7 @@
           </td>
 
           <td v-if="currentTab === 'all'">
-            <select v-model="user.status" class="status-select">
+            <select v-model="user.status" class="status-select" @change="handleStatusChange(user.id, user.status)">
               <option value="Active">Active</option>
               <option value="Pending">Pending</option>
               <option value="Deleted">Deleted</option>
@@ -66,6 +69,8 @@
 </template>
 
 <script>
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+
 export default {
   name: 'Permission',
   data() {
@@ -73,11 +78,9 @@ export default {
       currentTab: 'all', 
       searchType: 'name',
       searchKeyword: '',
-      users: [
-        { id: 1, empId: 'aisj192891910', name: '홍길동', email: 'djfkdjkf@hyundai.com', role: 'User', status: 'Pending' },
-        { id: 2, empId: 'aisj192891911', name: '김철수', email: 'chulsoo@hyundai.com', role: 'User', status: 'Deleted' },
-        { id: 3, empId: 'aisj192891912', name: '이영희', email: 'younghee@hyundai.com', role: 'Admin', status: 'Active' },
-      ]
+      users: [],
+      loading: false,
+      error: null
     }
   },
   computed: {
@@ -98,24 +101,176 @@ export default {
 
       if (this.searchKeyword) {
         result = result.filter(user => 
-          user[this.searchType].includes(this.searchKeyword)
+          user[this.searchType].toLowerCase().includes(this.searchKeyword.toLowerCase())
         );
       }
       return result;
     }
   },
+  async mounted() {
+    await this.loadUsers();
+  },
   methods: {
-    handleAction(action, userId) {
-      if (confirm(`${action} 처리 하시겠습니까?`)) {
-        // 처리 후 상태 변경 로직 (예시)
-        const userIndex = this.users.findIndex(u => u.id === userId);
-        if (action === 'approve') {
-          this.users[userIndex].status = 'Active';
-        } else if (action === 'reject' && this.currentTab === 'pending') {
-          this.users.splice(userIndex, 1); // 목록에서 제거
+    async loadUsers() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/users`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('사용자 목록을 불러오는데 실패했습니다.');
         }
-        // 이 부분에 API 요청 로직이 들어가면 자연스럽게 computed가 반응하여 빨간 점이 사라집니다.
+
+        const result = await response.json();
+        this.users = result.map(user => ({
+          id: user.employeeId,
+          employee_id: user.employeeId.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          status: user.status
+        }));
+      } catch (error) {
+        console.error('Load users error:', error);
+        this.error = error.message;
+        // 임시 데이터로 폴백
+        this.users = [
+          { id: 1, employee_id: 'aisj192891910', name: '홍길동', email: 'djfkdjkf@hyundai.com', role: 'User', status: 'Pending' },
+          { id: 2, employee_id: 'aisj192891911', name: '김철수', email: 'chulsoo@hyundai.com', role: 'User', status: 'Deleted' },
+          { id: 3, employee_id: 'aisj192891912', name: '이영희', email: 'younghee@hyundai.com', role: 'Admin', status: 'Active' },
+        ];
+      } finally {
+        this.loading = false;
       }
+    },
+
+    async updateUserRole(userId, newRole) {
+      try {
+        const url = `${API_BASE_URL}/api/users/${userId}/role`
+        console.log('Update role API URL:', url, 'role:', newRole)
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ role: newRole })
+        });
+
+        console.log('Update role response status:', response.status)
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('Update role response error:', errorText)
+          throw new Error(`역할 업데이트에 실패했습니다. (${response.status})`);
+        }
+
+        const result = await response.json()
+        console.log('Update role success:', result)
+        return result;
+      } catch (error) {
+        console.error('Update role error:', error);
+        throw error; // 상위로 에러 전파
+      }
+    },
+
+    async handleAction(action, userId) {
+      if (!confirm(`${action} 처리 하시겠습니까?`)) return;
+
+      try {
+        let endpoint, method, body;
+
+        switch (action) {
+          case 'approve':
+            endpoint = `${API_BASE_URL}/api/users/${userId}/approve`;
+            method = 'PUT';
+            break;
+          case 'reject':
+            endpoint = `${API_BASE_URL}/api/users/${userId}/reject`;
+            method = 'PUT';
+            break;
+          case 'cancelDelete':
+            endpoint = `${API_BASE_URL}/api/users/${userId}/cancel-delete`;
+            method = 'PUT';
+            break;
+          case 'confirmDelete':
+            endpoint = `${API_BASE_URL}/api/users/${userId}`;
+            method = 'DELETE';
+            break;
+        }
+
+        const response = await fetch(endpoint, {
+          method,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: body ? JSON.stringify(body) : undefined
+        });
+
+        if (!response.ok) {
+          throw new Error(`${action} 처리에 실패했습니다.`);
+        }
+
+        // 성공 시 목록 새로고침
+        await this.loadUsers();
+      } catch (error) {
+        console.error('Action error:', error);
+        alert(error.message);
+      }
+    },
+
+    async handleRoleChange(userId, newRole) {
+      console.log('handleRoleChange:', userId, newRole)
+      
+      // Optimistic update: UI 먼저 업데이트
+      const userIndex = this.users.findIndex(u => u.id === userId);
+      const oldRole = this.users[userIndex].role;
+      this.users[userIndex].role = newRole;
+      
+      // 백그라운드에서 API 호출
+      try {
+        await this.updateUserRole(userId, newRole);
+      } catch (error) {
+        // 실패 시 원래 값으로 롤백
+        this.users[userIndex].role = oldRole;
+        console.error('Role change failed, rolled back:', error);
+        alert('역할 변경에 실패했습니다.');
+      }
+    },
+
+    async handleStatusChange(userId, newStatus) {
+      console.log('handleStatusChange:', userId, newStatus)
+      
+      // Optimistic update: UI 먼저 업데이트
+      const userIndex = this.users.findIndex(u => u.id === userId);
+      const oldStatus = this.users[userIndex].status;
+      this.users[userIndex].status = newStatus;
+      
+      // 백그라운드에서 API 호출
+      try {
+        await this.updateUserStatus(userId, newStatus);
+      } catch (error) {
+        // 실패 시 원래 값으로 롤백
+        this.users[userIndex].status = oldStatus;
+        console.error('Status change failed, rolled back:', error);
+        alert('상태 변경에 실패했습니다.');
+      }
+    }
+  },
+  watch: {
+    // 역할이나 상태가 변경되면 자동으로 DB 업데이트
+    users: {
+      handler(newUsers) {
+        // watch는 초기 로드 시에도 실행되므로, mounted 후에만 처리
+        if (!this.loading && newUsers.length > 0) {
+          // 실제로는 각 필드의 변경을 감지하는 로직이 필요하지만,
+          // 간단하게 하기 위해 select의 @change 이벤트로 처리
+        }
+      },
+      deep: true
     }
   }
 }
@@ -128,6 +283,21 @@ export default {
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
 }
 
 .tabs {

@@ -15,11 +15,13 @@ export const useAuthStore = defineStore('auth', {
       this.token = token;
       // 필요시 localStorage나 sessionStorage에 토큰 저장
       localStorage.setItem('authToken', token);
+      localStorage.setItem('userRole', userData.role);
     },
     logout() {
       this.user = null;
       this.token = null;
       localStorage.removeItem('authToken');
+      localStorage.removeItem('userRole');
     }
   }
 })

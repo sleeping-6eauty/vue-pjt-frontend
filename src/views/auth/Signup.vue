@@ -13,9 +13,9 @@
         <input type="password" v-model="form.password" placeholder="비밀번호" required />
       </div>
       <div class="input-group">
-        <input type="text" v-model="form.empId" placeholder="사번" required />
+        <input type="number" v-model="form.employee_id" placeholder="사번" required />
       </div>
-      
+      <div v-if="message" class="message">{{ message }}</div>
       <button type="submit" class="btn-primary">계정 등록</button>
     </form>
     
@@ -26,6 +26,8 @@
 </template>
 
 <script>
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+
 export default {
   name: 'Signup',
   data() {
@@ -34,16 +36,49 @@ export default {
         name: '',
         email: '',
         password: '',
-        empId: ''
-      }
+        employee_id: ''
+      },
+      message: ''
     }
   },
   methods: {
-    handleSignup() {
-      // Springboot API 회원가입 호출 로직 추가 부분
-      console.log('계정 등록 데이터:', this.form);
-      alert('등록이 요청되었습니다. 관리자 승인 후 로그인 가능합니다.');
-      this.$router.push('/login');
+    async handleSignup() {
+      this.message = ''
+
+      const employeeId = Number(this.form.employee_id)
+      if (!employeeId || employeeId <= 0) {
+        this.message = '유효한 사번을 입력해주세요.'
+        return
+      }
+
+      const signupData = {
+        employeeId,
+        name: this.form.name.trim(),
+        email: this.form.email.trim(),
+        password: this.form.password
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(signupData)
+        })
+
+        const result = await response.json()
+
+        if (response.ok) {
+          alert(result.message || '회원가입 성공')
+          this.$router.push('/login')
+        } else {
+          this.message = result.message || '회원가입에 실패했습니다.'
+        }
+      } catch (error) {
+        console.error('Signup API error:', error)
+        this.message = '네트워크 오류가 발생했습니다. 다시 시도해주세요.'
+      }
     }
   }
 }
@@ -99,9 +134,12 @@ input:focus {
   background-color: #001f42;
 }
 
-.links {
-  margin-top: 20px;
-}
+  .message {
+    margin-top: 12px;
+    color: #d03838;
+    font-size: 14px;
+    text-align: left;
+  }
 
 .btn-cancel {
   color: #666;
