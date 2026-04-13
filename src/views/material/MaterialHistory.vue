@@ -1,0 +1,162 @@
+<template>
+  <div class="material-page">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">자재 관리</h1>
+        <p class="page-description">입고, 사용, 조정 기준으로 최근 재고 변동 내역을 추적합니다.</p>
+      </div>
+    </header>
+
+    <MaterialTabs />
+
+    <div class="timeline-card">
+      <div v-for="item in historyRows" :key="item.id" class="timeline-row">
+        <div class="timeline-date">
+          <strong>{{ item.date }}</strong>
+          <span>{{ item.time }}</span>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-head">
+            <h2>{{ item.materialName }}</h2>
+            <span class="change-badge" :class="item.type">{{ item.typeLabel }}</span>
+          </div>
+          <p class="timeline-meta">{{ item.materialId }} · {{ item.reason }}</p>
+          <p class="timeline-qty">
+            변동 수량
+            <strong :class="item.delta > 0 ? 'plus' : 'minus'">
+              {{ item.delta > 0 ? '+' : '' }}{{ item.delta }}
+            </strong>
+            / 변경 후 재고 {{ item.afterStock }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import MaterialTabs from '@/components/material/MaterialTabs.vue'
+import { loadMaterialHistory } from '../../store/material'
+
+export default {
+  name: 'MaterialHistory',
+  components: { MaterialTabs },
+  data() {
+    return {
+      historyRows: loadMaterialHistory()
+    }
+  }
+}
+</script>
+
+<style scoped>
+.material-page {
+  width: 100%;
+}
+
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+}
+
+.page-description {
+  margin: 0;
+  color: #666;
+}
+
+.timeline-card {
+  background: #fff;
+  border: 1px solid #eef0f2;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  padding: 8px 24px;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.timeline-row:last-child {
+  border-bottom: none;
+}
+
+.timeline-date {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #495057;
+}
+
+.timeline-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.timeline-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.timeline-meta,
+.timeline-qty {
+  margin: 0;
+  color: #666;
+}
+
+.timeline-qty {
+  margin-top: 8px;
+}
+
+.change-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.change-badge.in {
+  background: #2b8a3e;
+}
+
+.change-badge.out {
+  background: #f08c00;
+}
+
+.change-badge.adjust {
+  background: #5f3dc4;
+}
+
+.plus {
+  color: #2b8a3e;
+}
+
+.minus {
+  color: #dc3545;
+}
+
+@media (max-width: 768px) {
+  .timeline-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .timeline-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+</style>
