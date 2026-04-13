@@ -23,7 +23,7 @@
 
     <div class="logout-area">
       <button class="btn-logout" @click="handleLogout">
-        <span class="icon">🚪</span> Log out
+        <span class="icon"><img src="@/assets/images/logout.png" style="height: 20px; width: 20px;" alt="Log out" /></span> Log out
       </button>
     </div>
   </aside>
@@ -106,6 +106,10 @@ export default {
 
 .logout-area {
   padding: 20px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 .btn-logout {
