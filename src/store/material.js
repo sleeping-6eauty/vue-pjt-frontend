@@ -1,64 +1,16 @@
-const MATERIAL_STORAGE_KEY = 'material-state-v1'
-const MATERIAL_HISTORY_STORAGE_KEY = 'material-history-v1'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
-const DEFAULT_MATERIALS = [
-  {
-    id: 1,
-    materialId: 'G80-ENGINE-001',
-    name: '가솔린 3.5 터보',
-    currentStock: 35,
-    safetyStock: 10,
-    demandQty: 20,
-    unitPrice: 85000
-  },
-  {
-    id: 2,
-    materialId: 'MAT-002',
-    name: '너트 B',
-    currentStock: 50,
-    safetyStock: 40,
-    demandQty: 100,
-    unitPrice: 12000
-  },
-  {
-    id: 3,
-    materialId: 'MAT-003',
-    name: '패널 C',
-    currentStock: 20,
-    safetyStock: 30,
-    demandQty: 50,
-    unitPrice: 4300
-  }
-]
-
-const DEFAULT_HISTORY = [
-  { id: 1, date: '2026-04-10', time: '09:15', materialId: 'MAT-002', materialName: '너트 B', type: 'out', typeLabel: '사용', delta: -18, afterStock: 40, reason: '생산지시 #PO-240410-01' },
-  { id: 2, date: '2026-04-09', time: '16:40', materialId: 'G80-ENGINE-001', materialName: '가솔린 3.5 터보', type: 'in', typeLabel: '입고', delta: 25, afterStock: 120, reason: '정기 발주 입고' },
-  { id: 3, date: '2026-04-09', time: '11:20', materialId: 'MAT-003', materialName: '패널 C', type: 'adjust', typeLabel: '조정', delta: -3, afterStock: 15, reason: '실사 차이 반영' }
-]
-
-function readStorage(key, fallback) {
-  if (typeof window === 'undefined') return fallback
-  const saved = window.localStorage.getItem(key)
-  if (!saved) return fallback
-
-  try {
-    return JSON.parse(saved)
-  } catch {
-    return fallback
-  }
-}
-
-function writeStorage(key, value) {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(key, JSON.stringify(value))
+const HISTORY_LABEL = {
+  in: 'Inbound',
+  out: 'Usage',
+  adjust: 'Adjust'
 }
 
 function normalizeMaterial(row) {
-  const demandQty = Number(row.demandQty ?? row.pendingOrderQty ?? row.orderedStock ?? 0)
-  const currentStock = Number(row.currentStock ?? 0)
-  const safetyStock = Number(row.safetyStock ?? 0)
-  const unitPrice = Number(row.unitPrice ?? 0)
+  const demandQty = Number(row?.demandQty ?? row?.pendingOrderQty ?? row?.orderedStock ?? 0)
+  const currentStock = Number(row?.currentStock ?? 0)
+  const safetyStock = Number(row?.safetyStock ?? 0)
+  const unitPrice = Number(row?.unitPrice ?? 0)
 
   return {
     ...row,
@@ -69,25 +21,44 @@ function normalizeMaterial(row) {
   }
 }
 
-function buildHistoryEntry(target, type, typeLabel, delta, afterStock, reason) {
-  const now = new Date()
+function normalizeHistory(row, index) {
+  const type = row?.type ?? 'adjust'
   return {
-    id: Date.now() + Math.floor(Math.random() * 1000),
-    date: now.toISOString().slice(0, 10),
-    time: now.toTimeString().slice(0, 5),
-    materialId: target.materialId,
-    materialName: target.name,
+    id: row?.id ?? Date.now() + index,
+    date: row?.date ?? '',
+    time: row?.time ?? '',
+    materialId: row?.materialId ?? '',
+    materialName: row?.materialName ?? row?.name ?? '',
     type,
-    typeLabel,
-    delta,
-    afterStock,
-    reason
+    typeLabel: row?.typeLabel ?? HISTORY_LABEL[type] ?? type,
+    delta: Number(row?.delta ?? 0),
+    afterStock: Number(row?.afterStock ?? 0),
+    reason: row?.reason ?? ''
   }
 }
 
-function persistHistory(entry) {
-  const historyRows = loadMaterialHistory()
-  writeStorage(MATERIAL_HISTORY_STORAGE_KEY, [entry, ...historyRows])
+async function requestJson(path, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    },
+    ...options
+  })
+
+  let payload = null
+  try {
+    payload = await response.json()
+  } catch {
+    payload = null
+  }
+
+  if (!response.ok) {
+    const message = payload?.message || `API request failed (${response.status})`
+    throw new Error(message)
+  }
+
+  return payload
 }
 
 export function enrichMaterial(row) {
@@ -109,88 +80,46 @@ export function enrichMaterial(row) {
   }
 }
 
-export function loadMaterials() {
-  return readStorage(MATERIAL_STORAGE_KEY, DEFAULT_MATERIALS).map(enrichMaterial)
+export async function loadMaterials() {
+  const payload = await requestJson('/api/materials')
+  if (!Array.isArray(payload)) {
+    throw new Error('Invalid materials response format.')
+  }
+  return payload.map(enrichMaterial)
 }
 
-export function loadMaterialHistory() {
-  return readStorage(MATERIAL_HISTORY_STORAGE_KEY, DEFAULT_HISTORY)
+export async function loadMaterialHistory() {
+  const payload = await requestJson('/api/materials/history')
+  if (!Array.isArray(payload)) {
+    throw new Error('Invalid material history response format.')
+  }
+  return payload.map(normalizeHistory)
 }
 
-export function requestMaterialOrder(materialId) {
-  const baseMaterials = readStorage(MATERIAL_STORAGE_KEY, DEFAULT_MATERIALS).map(normalizeMaterial)
-  const target = baseMaterials.find((row) => row.materialId === materialId)
-
-  if (!target) return null
-
-  const enriched = enrichMaterial(target)
-  if (enriched.requiredStock <= 0) return enriched
-
-  const fulfilledQty = enriched.requiredStock
-  const updatedMaterials = baseMaterials.map((row) => {
-    if (row.materialId !== materialId) return row
-
-    return {
-      ...row,
-      currentStock: row.currentStock + fulfilledQty
-    }
+export async function requestMaterialOrder(materialId) {
+  const payload = await requestJson(`/api/materials/${encodeURIComponent(materialId)}/order`, {
+    method: 'POST'
   })
-
-  writeStorage(MATERIAL_STORAGE_KEY, updatedMaterials)
-  persistHistory(
-    buildHistoryEntry(target, 'in', '입고', fulfilledQty, target.currentStock + fulfilledQty, '주문요청 처리')
-  )
-
-  return enrichMaterial(updatedMaterials.find((row) => row.materialId === materialId))
+  return payload ? enrichMaterial(payload) : null
 }
 
-export function useMaterialStock(materialId) {
-  const baseMaterials = readStorage(MATERIAL_STORAGE_KEY, DEFAULT_MATERIALS).map(normalizeMaterial)
-  const target = baseMaterials.find((row) => row.materialId === materialId)
-  if (!target) return null
-
-  const usedQty = Math.min(target.currentStock, target.demandQty)
-  if (usedQty <= 0) return enrichMaterial(target)
-
-  const updatedMaterials = baseMaterials.map((row) => {
-    if (row.materialId !== materialId) return row
-    return {
-      ...row,
-      currentStock: row.currentStock - usedQty,
-      demandQty: row.demandQty - usedQty
-    }
+export async function useMaterialStock(materialId) {
+  const payload = await requestJson(`/api/materials/${encodeURIComponent(materialId)}/use`, {
+    method: 'POST'
   })
-
-  writeStorage(MATERIAL_STORAGE_KEY, updatedMaterials)
-  persistHistory(
-    buildHistoryEntry(target, 'out', '사용', -usedQty, target.currentStock - usedQty, '자재 사용 처리')
-  )
-
-  return enrichMaterial(updatedMaterials.find((row) => row.materialId === materialId))
+  return payload ? enrichMaterial(payload) : null
 }
 
-export function adjustMaterialStock(materialId, nextStock) {
+export async function adjustMaterialStock(materialId, nextStock) {
   const amount = Number(nextStock)
-  if (!Number.isFinite(amount) || amount < 0) return null
+  if (!Number.isFinite(amount) || amount < 0) {
+    throw new Error('nextStock must be a non-negative number.')
+  }
 
-  const adjustedStock = Math.floor(amount)
-  const baseMaterials = readStorage(MATERIAL_STORAGE_KEY, DEFAULT_MATERIALS).map(normalizeMaterial)
-  const target = baseMaterials.find((row) => row.materialId === materialId)
-  if (!target) return null
-
-  const delta = adjustedStock - target.currentStock
-  const updatedMaterials = baseMaterials.map((row) => {
-    if (row.materialId !== materialId) return row
-    return {
-      ...row,
-      currentStock: adjustedStock
-    }
+  const payload = await requestJson(`/api/materials/${encodeURIComponent(materialId)}/stock`, {
+    method: 'PUT',
+    body: JSON.stringify({ nextStock: Math.floor(amount) })
   })
 
-  writeStorage(MATERIAL_STORAGE_KEY, updatedMaterials)
-  persistHistory(
-    buildHistoryEntry(target, 'adjust', '조정', delta, adjustedStock, '실사 차이 반영')
-  )
-
-  return enrichMaterial(updatedMaterials.find((row) => row.materialId === materialId))
+  return payload ? enrichMaterial(payload) : null
 }

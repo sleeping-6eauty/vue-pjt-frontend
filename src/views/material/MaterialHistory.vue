@@ -43,7 +43,16 @@ export default {
   components: { MaterialTabs },
   data() {
     return {
-      historyRows: loadMaterialHistory()
+      historyRows: []
+    }
+  },
+  async mounted() {
+    try {
+      this.historyRows = await loadMaterialHistory()
+    } catch (error) {
+      console.error('Failed to load material history from server:', error)
+      this.historyRows = []
+      window.alert(error.message || '서버에서 재고 이력 데이터를 불러오지 못했습니다.')
     }
   }
 }
