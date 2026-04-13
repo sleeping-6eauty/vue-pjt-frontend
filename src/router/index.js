@@ -21,7 +21,7 @@ const routes = [
       { path: 'permission', name: 'Permission', component: () => import('@/views/admin/Permission.vue') },
       // BOM 조회, 자재 관리 등 추가 예정
       { path: 'order', name: 'Order', component: () => import('@/views/Order.vue') },
-      { path: 'bom', name: 'Bom', component: () => import('@/views/BOM.vue') },
+      { path: 'bom', name: 'Bom', component: () => import('@/views/bom/BOM.vue') },
       { path: 'material', name: 'Material', component: () => import('@/views/material/Material.vue') },
       { path: 'material/price', name: 'MaterialPrice', component: () => import('@/views/material/MaterialPrice.vue') },
       { path: 'material/history', name: 'MaterialHistory', component: () => import('@/views/material/MaterialHistory.vue') }
