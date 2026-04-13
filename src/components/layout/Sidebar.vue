@@ -15,7 +15,7 @@
         <li>
           <router-link to="/admin/order" active-class="active-menu">주문 현황</router-link>
         </li>
-        <li>
+        <li v-if="isAdmin">
           <router-link to="/admin/permission" active-class="active-menu">권한 관리</router-link>
         </li>
       </ul>
@@ -34,6 +34,14 @@ import { useAuthStore } from '@/store/auth'
 
 export default {
   name: 'Sidebar',
+  computed: {
+    isAdmin() {
+      const authStore = useAuthStore()
+      const isAdmin = authStore.isAdmin
+      console.log('Sidebar isAdmin check:', isAdmin, 'user:', authStore.user)
+      return isAdmin
+    }
+  },
   methods: {
     handleLogout() {
       const authStore = useAuthStore();
