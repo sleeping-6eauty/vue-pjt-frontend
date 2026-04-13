@@ -89,89 +89,54 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 
-const categories = ["전체", "차량", "엔진", "구동", "타이어", "시트", "옵션"];
+const categories = ["전체", "엔진", "구동", "타이어", "시트", "옵션"];
 const selectedCategory = ref("전체");
 const searchKeyword = ref("");
 
-const bomList = ref([
-  {
-    id: 1,
-    category: "엔진",
-    partNo: 10,
-    name: "엔진",
-    quantity: 2,
-    unit: "개",
-    process: "내장",
-    car: "G90",
-    badgeType: "mint",
-  },
-  {
-    id: 2,
-    category: "엔진",
-    partNo: 11,
-    name: "엔진 커버",
-    quantity: 1,
-    unit: "개",
-    process: "내장",
-    car: "G80",
-    badgeType: "blue",
-  },
-  {
-    id: 3,
-    category: "타이어",
-    partNo: 21,
-    name: "타이어",
-    quantity: 4,
-    unit: "개",
-    process: "외장",
-    car: "GV80",
-    badgeType: "beige",
-  },
-  {
-    id: 4,
-    category: "시트",
-    partNo: 31,
-    name: "운전석 시트",
-    quantity: 1,
-    unit: "개",
-    process: "내장",
-    car: "G90",
-    badgeType: "mint",
-  },
-]);
+const bomList = ref([]);
+const priceList = ref([]);
+const loading = ref(false);
+const errorMessage = ref("");
 
-const priceList = ref([
-  {
-    id: 1,
-    category: "엔진",
-    name: "엔진",
-    desc: "외부 공정",
-    price: 10000,
-  },
-  {
-    id: 2,
-    category: "엔진",
-    name: "엔진 커버",
-    desc: "외부 공정",
-    price: 7000,
-  },
-  {
-    id: 3,
-    category: "타이어",
-    name: "타이어",
-    desc: "외부 공정",
-    price: 20000,
-  },
-  {
-    id: 4,
-    category: "시트",
-    name: "운전석 시트",
-    desc: "내부 공정",
-    price: 15000,
-  },
-]);
+const getBadgeType = (car) => {
+  if (car === "G70") return "mint";
+  if (car === "G80") return "blue";
+  if (car === "G90") return "beige";
+  if (car === "GV80") return "beige";
+  return "blue";
+};
+
+const loadBomPage = async () => {
+  loading.value = true;
+  errorMessage.value = "";
+
+  try {
+    const response = await fetch("http://localhost:8080/api/bom/page");
+
+    if (!response.ok) {
+      throw new Error("서버 응답 오류");
+    }
+
+    const data = await response.json();
+
+    bomList.value = (data.bomList || []).map((item) => ({
+      ...item,
+      badgeType: getBadgeType(item.car),
+    }));
+
+    priceList.value = (data.priceList || []).map((item) => ({
+      ...item,
+      desc: item.description ?? "",
+    }));
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = "데이터를 불러오지 못했습니다.";
+  } finally {
+    loading.value = false;
+  }
+};
 
 const filteredBomList = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase();
@@ -183,10 +148,10 @@ const filteredBomList = computed(() => {
 
     const matchKeyword =
       !keyword ||
-      String(item.partNo).toLowerCase().includes(keyword) ||
-      item.name.toLowerCase().includes(keyword) ||
-      item.process.toLowerCase().includes(keyword) ||
-      item.car.toLowerCase().includes(keyword);
+      String(item.partNo ?? "").toLowerCase().includes(keyword) ||
+      String(item.name ?? "").toLowerCase().includes(keyword) ||
+      String(item.process ?? "").toLowerCase().includes(keyword) ||
+      String(item.car ?? "").toLowerCase().includes(keyword);
 
     return matchCategory && matchKeyword;
   });
@@ -202,12 +167,16 @@ const filteredPriceList = computed(() => {
 
     const matchKeyword =
       !keyword ||
-      item.name.toLowerCase().includes(keyword) ||
-      item.desc.toLowerCase().includes(keyword) ||
-      String(item.price).includes(keyword);
+      String(item.name ?? "").toLowerCase().includes(keyword) ||
+      String(item.desc ?? "").toLowerCase().includes(keyword) ||
+      String(item.price ?? "").includes(keyword);
 
     return matchCategory && matchKeyword;
   });
+});
+
+onMounted(() => {
+  loadBomPage();
 });
 </script>
 
