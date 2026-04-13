@@ -47,6 +47,10 @@ export default {
   transition: all 0.2s ease;
 }
 
+.tab-link:visited {
+  color: #495057;
+}
+
 .tab-link:hover {
   border-color: #002c5f;
   color: #002c5f;
@@ -55,6 +59,11 @@ export default {
 .tab-link-active {
   background: #002c5f;
   border-color: #002c5f;
+  color: #fff;
+}
+
+.tab-link-active:visited,
+.tab-link-active:hover {
   color: #fff;
 }
 </style>

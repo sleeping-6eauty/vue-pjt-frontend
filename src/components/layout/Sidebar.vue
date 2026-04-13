@@ -10,7 +10,7 @@
           <router-link to="/admin/bom" active-class="active-menu">BOM 조회</router-link>
         </li>
         <li>
-          <router-link to="/admin/material" active-class="active-menu">자재 관리</router-link>
+          <router-link to="/admin/material" :class="{ 'active-menu': $route.path.startsWith('/admin/material') }">자재 관리</router-link>
         </li>
         <li>
           <router-link to="/admin/order" active-class="active-menu">주문 현황</router-link>

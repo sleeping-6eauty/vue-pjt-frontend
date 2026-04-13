@@ -6,27 +6,27 @@ const DEFAULT_MATERIALS = [
     id: 1,
     materialId: 'G80-ENGINE-001',
     name: '가솔린 3.5 터보',
-    currentStock: 120,
-    safetyStock: 90,
-    demandQty: 1000,
+    currentStock: 35,
+    safetyStock: 10,
+    demandQty: 20,
     unitPrice: 85000
   },
   {
     id: 2,
     materialId: 'MAT-002',
     name: '너트 B',
-    currentStock: 40,
-    safetyStock: 55,
-    demandQty: 1000,
+    currentStock: 50,
+    safetyStock: 40,
+    demandQty: 100,
     unitPrice: 12000
   },
   {
     id: 3,
     materialId: 'MAT-003',
     name: '패널 C',
-    currentStock: 15,
-    safetyStock: 18,
-    demandQty: 1000,
+    currentStock: 20,
+    safetyStock: 30,
+    demandQty: 50,
     unitPrice: 4300
   }
 ]
@@ -93,7 +93,7 @@ function persistHistory(entry) {
 export function enrichMaterial(row) {
   const normalized = normalizeMaterial(row)
   const requiredStock = Math.max(0, normalized.safetyStock + normalized.demandQty - normalized.currentStock)
-  let status = 'ok'
+  let status = 'normal'
 
   if (normalized.currentStock < normalized.safetyStock) {
     status = 'danger'
