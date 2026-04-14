@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <div class="material-page">
     <header class="page-header">
       <div>
         <h1 class="page-title">자재 관리</h1>
-        <p class="page-description">자재별 기준 단가와 최근 가격 변동을 확인합니다.</p>
+        <p class="page-description">자재별 기준 단가를 확인합니다.</p>
       </div>
     </header>
 
@@ -30,10 +30,8 @@
           <tr>
             <th>자재 ID</th>
             <th>자재명</th>
-            <th>공급처</th>
+            <th>카테고리</th>
             <th>기준 단가</th>
-            <!-- <th>최근 변동률</th>
-            <th>최종 갱신일</th> -->
           </tr>
         </thead>
         <tbody>
@@ -42,8 +40,9 @@
             <td>{{ row.name }}</td>
             <td>{{ row.vendor }}</td>
             <td>{{ formatCurrency(row.unitPrice) }}</td>
-            <!-- <td :class="row.changeRate > 0 ? 'up-rate' : 'down-rate'">{{ row.changeRate }}%</td>
-            <td>{{ row.updatedAt }}</td> -->
+          </tr>
+          <tr v-if="!rows.length">
+            <td colspan="4">표시할 가격 데이터가 없습니다.</td>
           </tr>
         </tbody>
       </table>
@@ -54,29 +53,53 @@
 <script>
 import MaterialTabs from '@/components/material/MaterialTabs.vue'
 
-const PRICE_ROWS = [
-  { materialId: 'G80-ENGINE-001', name: '가솔린 3.5 터보', vendor: '현대모비스', unitPrice: 85000, changeRate: 4.2, updatedAt: '2026-04-09' },
-  { materialId: 'MAT-002', name: '너트 B', vendor: '한성정밀', unitPrice: 12000, changeRate: 1.1, updatedAt: '2026-04-08' },
-  { materialId: 'MAT-003', name: '패널 C', vendor: '동서패널', unitPrice: 4300, changeRate: -0.8, updatedAt: '2026-04-07' }
-]
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 export default {
   name: 'MaterialPrice',
   components: { MaterialTabs },
   data() {
     return {
-      rows: PRICE_ROWS
+      rows: []
     }
   },
   computed: {
     avgPrice() {
+      if (!this.rows.length) return 0
       return Math.round(this.rows.reduce((sum, row) => sum + row.unitPrice, 0) / this.rows.length)
     },
     highestPrice() {
+      if (!this.rows.length) {
+        return { name: '-' }
+      }
       return this.rows.reduce((max, row) => (row.unitPrice > max.unitPrice ? row : max), this.rows[0])
     }
   },
+  async mounted() {
+    await this.loadPriceRows()
+  },
   methods: {
+    async loadPriceRows() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/bom/page`)
+        if (!response.ok) {
+          throw new Error(`API request failed (${response.status})`)
+        }
+
+        const payload = await response.json()
+        const rawRows = Array.isArray(payload?.priceList) ? payload.priceList : []
+        this.rows = rawRows.map((row) => ({
+          materialId: row?.id ?? '',
+          name: row?.name ?? '',
+          vendor: row?.category ?? '',
+          unitPrice: Number(row?.price ?? 0)
+        }))
+      } catch (error) {
+        console.error('Failed to load material price rows:', error)
+        this.rows = []
+        window.alert(error.message || '가격 정보를 불러오지 못했습니다.')
+      }
+    },
     formatCurrency(value) {
       return new Intl.NumberFormat('ko-KR', {
         style: 'currency',
@@ -155,16 +178,6 @@ export default {
 
 .data-table th {
   background: #f8f9fa;
-}
-
-.up-rate {
-  color: #dc3545;
-  font-weight: 700;
-}
-
-.down-rate {
-  color: #2b8a3e;
-  font-weight: 700;
 }
 
 @media (max-width: 900px) {

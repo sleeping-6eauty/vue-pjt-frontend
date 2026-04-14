@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <div class="material-page">
     <header class="page-header">
       <div>
         <h1 class="page-title">자재 관리</h1>
-        <p class="page-description">최근 자재 상태를 확인할 수 있습니다.</p>
+        <p class="page-description">최신 자재 상태를 확인할 수 있습니다.</p>
       </div>
     </header>
 
@@ -15,11 +15,11 @@
         <p class="stat-value">{{ summary.total }}<span class="unit">개</span></p>
       </article>
       <article class="stat-card">
-        <p class="stat-label">안전재고 이하 품목</p>
+        <p class="stat-label">안전재고 이하 항목</p>
         <p class="stat-value stat-danger">{{ summary.danger }}<span class="unit">개</span></p>
       </article>
       <article class="stat-card">
-        <p class="stat-label">주문 대응 필요 품목</p>
+        <p class="stat-label">주문 필요 항목</p>
         <p class="stat-value stat-warning">{{ summary.shortage }}<span class="unit">개</span></p>
       </article>
       <article class="stat-card">
@@ -29,14 +29,15 @@
     </section>
 
     <div v-if="summary.danger > 0" class="danger-banner">
-      특정 자재가 안전재고 이하입니다. 즉시 발주 또는 생산 계획 조정이 필요합니다.
+      일부 자재가 안전재고 이하입니다. 즉시 발주 또는 생산 계획 조정이 필요합니다.
     </div>
     <div v-else-if="summary.shortage > 0" class="shortage-banner">
-      특정 자재가 부족합니다. 즉시 발주 또는 생산 계획 조정이 필요합니다.
+      일부 자재가 부족합니다. 즉시 발주 또는 생산 계획 조정이 필요합니다.
     </div>
     <div v-else class="normal-banner">
-      모든 자재가 적정 재고 수준에 있습니다.
+      모든 자재가 적정 재고를 유지하고 있습니다.
     </div>
+
     <div class="filter-bar">
       <div class="filter-input-wrap">
         <span class="input-icon search" aria-hidden="true" />
@@ -184,9 +185,18 @@
           aria-label="이전 페이지"
           @click="currentPage -= 1"
         >
-          ‹
+          &lt;
         </button>
-        <span class="page-current">{{ currentPage }}</span>
+        <button
+          v-for="page in totalPages"
+          :key="page"
+          type="button"
+          class="page-btn page-num"
+          :class="{ 'is-active': currentPage === page }"
+          @click="currentPage = page"
+        >
+          {{ page }}
+        </button>
         <button
           type="button"
           class="page-btn"
@@ -194,7 +204,7 @@
           aria-label="다음 페이지"
           @click="currentPage += 1"
         >
-          ›
+          &gt;
         </button>
       </nav>
     </div>
@@ -217,7 +227,7 @@ export default {
   },
   data() {
     return {
-      materials: loadMaterials(),
+      materials: [],
       filters: {
         name: '',
         id: '',
@@ -290,7 +300,21 @@ export default {
       if (this.currentPage > this.totalPages) this.currentPage = this.totalPages
     }
   },
+  async mounted() {
+    await this.refreshMaterials()
+  },
   methods: {
+    async refreshMaterials() {
+      try {
+        this.materials = await loadMaterials()
+        this.selectedIds = this.selectedIds.filter((id) => this.materials.some((row) => row.id === id))
+      } catch (error) {
+        console.error('Failed to load materials from server:', error)
+        this.materials = []
+        this.selectedIds = []
+        window.alert(error.message || '서버에서 자재 데이터를 불러오지 못했습니다.')
+      }
+    },
     applyFilters() {
       this.applied = {
         name: this.filters.name,
@@ -308,8 +332,8 @@ export default {
       }
     },
     sortGlyph(key) {
-      if (this.sortKey !== key) return '⇅'
-      return this.sortDir === 'asc' ? '▲' : '▼'
+      if (this.sortKey !== key) return '↕'
+      return this.sortDir === 'asc' ? '↑' : '↓'
     },
     toggleSelectAll(checked) {
       const ids = this.pagedRows.map((r) => r.id)
@@ -338,21 +362,36 @@ export default {
         maximumFractionDigits: 0
       }).format(value)
     },
-    requestOrder(materialId) {
-      requestMaterialOrder(materialId)
-      this.materials = loadMaterials()
+    async requestOrder(materialId) {
+      try {
+        await requestMaterialOrder(materialId)
+        await this.refreshMaterials()
+      } catch (error) {
+        console.error('Failed to request material order:', error)
+        window.alert(error.message || '주문요청 처리에 실패했습니다.')
+      }
     },
-    useStock(materialId) {
-      useMaterialStock(materialId)
-      this.materials = loadMaterials()
+    async useStock(materialId) {
+      try {
+        await useMaterialStock(materialId)
+        await this.refreshMaterials()
+      } catch (error) {
+        console.error('Failed to use material stock:', error)
+        window.alert(error.message || '자재 사용 처리에 실패했습니다.')
+      }
     },
-    adjustStock(materialId) {
+    async adjustStock(materialId) {
       const row = this.materials.find((item) => item.materialId === materialId)
-      const raw = window.prompt('조정 후 보유 재고량을 입력하세요.', String(row?.currentStock ?? 0))
+      const raw = window.prompt('조정 후 보유 재고값을 입력하세요.', String(row?.currentStock ?? 0))
       if (raw === null) return
 
-      adjustMaterialStock(materialId, raw)
-      this.materials = loadMaterials()
+      try {
+        await adjustMaterialStock(materialId, raw)
+        await this.refreshMaterials()
+      } catch (error) {
+        console.error('Failed to adjust material stock:', error)
+        window.alert(error.message || '재고 조정에 실패했습니다.')
+      }
     }
   }
 }
@@ -401,17 +440,6 @@ export default {
   border: 1px solid transparent;
   font-family: inherit;
 }
-
-/* .btn-primary {
-  background: #fff;
-  color: #333;
-  border-color: #dee2e6;
-}
-
-.btn-primary:hover {
-  background-color: #001a3d;
-  border-color: #001a3d;
-} */
 
 .btn-outline {
   background: #fff;
@@ -683,8 +711,10 @@ export default {
 }
 
 .sort-icons {
-  font-size: 10px;
+  font-size: 12px;
   color: #adb5bd;
+  min-width: 14px;
+  text-align: center;
 }
 
 .sort-icons.active {
@@ -765,16 +795,21 @@ export default {
   cursor: not-allowed;
 }
 
-.page-current {
+.page-num {
   min-width: 36px;
   height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #002c5f;
+  border: 1px solid #dee2e6;
   border-radius: 8px;
   font-weight: 700;
-  color: #002c5f;
+  color: #333;
   background: #fff;
+}
+
+.page-num.is-active {
+  border-color: #002c5f;
+  color: #002c5f;
 }
 </style>
