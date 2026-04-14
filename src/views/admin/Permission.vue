@@ -1,10 +1,10 @@
 <template>
   <div class="permission-page">
     <h2>이용자 목록</h2>
-    
+
     <div v-if="error" class="error-message">{{ error }}</div>
     <div v-if="loading" class="loading">로딩 중...</div>
-    
+
     <div class="tabs">
       <button :class="{ active: currentTab === 'all' }" @click="currentTab = 'all'">
         전체
@@ -40,7 +40,7 @@
           <td>{{ user.employee_id }}</td>
           <td>{{ user.name }}</td>
           <td>{{ user.email }}</td>
-          
+
           <td v-if="currentTab === 'all'">
             <select v-model="user.role" class="role-select" @change="handleRoleChange(user.id, user.role)">
               <option value="User">User</option>
@@ -50,7 +50,7 @@
           <td v-else class="action-buttons">
             <button v-if="currentTab === 'pending'" class="btn-approve" @click="handleAction('approve', user.id)">승인</button>
             <button v-if="currentTab === 'pending'" class="btn-reject" @click="handleAction('reject', user.id)">거절</button>
-            
+
             <button v-if="currentTab === 'deleted'" class="btn-cancel" @click="handleAction('cancelDelete', user.id)">취소</button>
             <button v-if="currentTab === 'deleted'" class="btn-reject" @click="handleAction('confirmDelete', user.id)">삭제</button>
           </td>
@@ -72,10 +72,10 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 export default {
-  name: 'Permission',
+  name: 'PermissionForm',
   data() {
     return {
-      currentTab: 'all', 
+      currentTab: 'all',
       searchType: 'name',
       searchKeyword: '',
       users: [],
@@ -96,11 +96,11 @@ export default {
       let result = this.users.filter(user => {
         if (this.currentTab === 'pending') return user.status === 'Pending';
         if (this.currentTab === 'deleted') return user.status === 'Deleted';
-        return true; 
+        return true;
       });
 
       if (this.searchKeyword) {
-        result = result.filter(user => 
+        result = result.filter(user =>
           user[this.searchType].toLowerCase().includes(this.searchKeyword.toLowerCase())
         );
       }
@@ -189,8 +189,8 @@ export default {
             method = 'PUT';
             break;
           case 'reject':
-            endpoint = `${API_BASE_URL}/api/users/${userId}/reject`;
-            method = 'PUT';
+            endpoint = `${API_BASE_URL}/api/users/${userId}`;
+            method = 'DELETE';
             break;
           case 'cancelDelete':
             endpoint = `${API_BASE_URL}/api/users/${userId}/cancel-delete`;
@@ -224,12 +224,12 @@ export default {
 
     async handleRoleChange(userId, newRole) {
       console.log('handleRoleChange:', userId, newRole)
-      
+
       // Optimistic update: UI 먼저 업데이트
       const userIndex = this.users.findIndex(u => u.id === userId);
       const oldRole = this.users[userIndex].role;
       this.users[userIndex].role = newRole;
-      
+
       // 백그라운드에서 API 호출
       try {
         await this.updateUserRole(userId, newRole);
@@ -243,12 +243,12 @@ export default {
 
     async handleStatusChange(userId, newStatus) {
       console.log('handleStatusChange:', userId, newStatus)
-      
+
       // Optimistic update: UI 먼저 업데이트
       const userIndex = this.users.findIndex(u => u.id === userId);
       const oldStatus = this.users[userIndex].status;
       this.users[userIndex].status = newStatus;
-      
+
       // 백그라운드에서 API 호출
       try {
         await this.updateUserStatus(userId, newStatus);
