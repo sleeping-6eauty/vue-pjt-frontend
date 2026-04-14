@@ -23,7 +23,7 @@ const routes = [
       { path: 'order', name: 'Order', component: () => import('@/views/Order.vue') },
       { path: 'bom', name: 'Bom', component: () => import('@/views/bom/BOM.vue') },
       { path: 'material', name: 'Material', component: () => import('@/views/material/Material.vue') },
-      { path: 'material/price', name: 'MaterialPrice', component: () => import('@/views/material/MaterialPrice.vue') },
+      { path: 'material/price', redirect: '/admin/material' },
       { path: 'material/history', name: 'MaterialHistory', component: () => import('@/views/material/MaterialHistory.vue') }
     ]
   }

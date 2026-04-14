@@ -18,8 +18,7 @@ export default {
   data() {
     return {
       tabs: [
-        { label: '최근 재고 현황', to: '/admin/material' },
-        { label: '자재별 가격', to: '/admin/material/price' },
+        { label: '최신 재고 현황', to: '/admin/material' },
         { label: '재고 변동 이력', to: '/admin/material/history' }
       ]
     }
