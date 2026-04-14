@@ -7,15 +7,19 @@ const HISTORY_LABEL = {
 }
 
 function normalizeMaterial(row) {
-  const demandQty = Number(row?.demandQty ?? row?.pendingOrderQty ?? row?.orderedStock ?? 0)
+  const demandQty = Number(
+    row?.demandQty ??
+      row?.requiredStock ??
+      row?.pendingOrderQty ??
+      row?.orderedStock ??
+      0
+  )
   const currentStock = Number(row?.currentStock ?? 0)
-  const safetyStock = Number(row?.safetyStock ?? 0)
   const unitPrice = Number(row?.unitPrice ?? 0)
 
   return {
     ...row,
     currentStock: Number.isFinite(currentStock) ? currentStock : 0,
-    safetyStock: Number.isFinite(safetyStock) ? safetyStock : 0,
     demandQty: Number.isFinite(demandQty) ? demandQty : 0,
     unitPrice: Number.isFinite(unitPrice) ? unitPrice : 0
   }
@@ -38,19 +42,24 @@ function normalizeHistory(row, index) {
 }
 
 async function requestJson(path, options = {}) {
+  const requestOptions = options && typeof options === 'object' ? options : {}
+  const { headers: optionHeaders, ...restOptions } = requestOptions
+  const extraHeaders =
+    optionHeaders && typeof optionHeaders === 'object' ? optionHeaders : {}
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...restOptions,
     headers: {
       'Content-Type': 'application/json',
-      ...(options.headers || {})
-    },
-    ...options
+      ...extraHeaders
+    }
   })
 
-  let payload = null
+  let payload
   try {
     payload = await response.json()
   } catch {
-    payload = null
+    // Ignore non-JSON response bodies.
   }
 
   if (!response.ok) {
@@ -63,20 +72,16 @@ async function requestJson(path, options = {}) {
 
 export function enrichMaterial(row) {
   const normalized = normalizeMaterial(row)
-  const requiredStock = Math.max(0, normalized.safetyStock + normalized.demandQty - normalized.currentStock)
-  let status = 'normal'
-
-  if (normalized.currentStock < normalized.safetyStock) {
-    status = 'danger'
-  } else if (requiredStock > 0) {
-    status = 'shortage'
-  }
+  const requiredStock = Math.max(0, normalized.demandQty)
+  const purchaseNeedQty = Math.max(0, requiredStock - normalized.currentStock)
+  const status = purchaseNeedQty > 0 ? 'shortage' : 'normal'
 
   return {
     ...normalized,
     requiredStock,
+    purchaseNeedQty,
     status,
-    additionalPurchaseCost: requiredStock * normalized.unitPrice
+    additionalPurchaseCost: purchaseNeedQty * normalized.unitPrice
   }
 }
 

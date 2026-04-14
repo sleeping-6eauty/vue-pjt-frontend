@@ -15,10 +15,6 @@
         <p class="stat-value">{{ summary.total }}<span class="unit">개</span></p>
       </article>
       <article class="stat-card">
-        <p class="stat-label">안전재고 이하 항목</p>
-        <p class="stat-value stat-danger">{{ summary.danger }}<span class="unit">개</span></p>
-      </article>
-      <article class="stat-card">
         <p class="stat-label">주문 필요 항목</p>
         <p class="stat-value stat-warning">{{ summary.shortage }}<span class="unit">개</span></p>
       </article>
@@ -28,10 +24,7 @@
       </article>
     </section>
 
-    <div v-if="summary.danger > 0" class="danger-banner">
-      일부 자재가 안전재고 이하입니다. 즉시 발주 또는 생산 계획 조정이 필요합니다.
-    </div>
-    <div v-else-if="summary.shortage > 0" class="shortage-banner">
+    <div v-if="summary.shortage > 0" class="shortage-banner">
       일부 자재가 부족합니다. 즉시 발주 또는 생산 계획 조정이 필요합니다.
     </div>
     <div v-else class="normal-banner">
@@ -63,7 +56,6 @@
         <span class="status-label">상태</span>
         <select v-model="filters.status" class="filter-select">
           <option value="all">전체</option>
-          <option value="danger">위험</option>
           <option value="shortage">부족</option>
           <option value="normal">정상</option>
         </select>
@@ -92,18 +84,6 @@
                 </button>
               </th>
               <th>
-                <button type="button" class="th-sort" @click="toggleSort('safetyStock')">
-                  안전 재고량
-                  <span class="sort-icons" :class="{ active: sortKey === 'safetyStock' }">{{ sortGlyph('safetyStock') }}</span>
-                </button>
-              </th>
-              <th>
-                <button type="button" class="th-sort" @click="toggleSort('demandQty')">
-                  수요 자재량
-                  <span class="sort-icons" :class="{ active: sortKey === 'demandQty' }">{{ sortGlyph('demandQty') }}</span>
-                </button>
-              </th>
-              <th>
                 <button type="button" class="th-sort" @click="toggleSort('requiredStock')">
                   필요 자재량
                   <span class="sort-icons" :class="{ active: sortKey === 'requiredStock' }">{{ sortGlyph('requiredStock') }}</span>
@@ -124,7 +104,6 @@
               v-for="row in pagedRows"
               :key="row.id"
               :class="{
-                'row-danger': row.status === 'danger',
                 'row-shortage': row.status === 'shortage'
               }"
             >
@@ -134,8 +113,6 @@
               <td>{{ row.materialId }}</td>
               <td>{{ row.name }}</td>
               <td>{{ row.currentStock }}</td>
-              <td>{{ row.safetyStock }}</td>
-              <td>{{ row.demandQty ?? 0 }}</td>
               <td>{{ row.requiredStock ?? 0 }}</td>
               <td>
                 <span class="badge" :class="statusClass(row.status)">
@@ -148,7 +125,7 @@
                   <button
                     type="button"
                     class="btn btn-outline btn-order"
-                    :disabled="row.requiredStock <= 0"
+                    :disabled="(row.purchaseNeedQty ?? 0) <= 0"
                     @click="requestOrder(row.materialId)"
                   >
                     주문요청
@@ -171,7 +148,7 @@
               </td>
             </tr>
             <tr v-if="!pagedRows.length">
-              <td colspan="10" class="empty-cell">조건에 맞는 자재가 없습니다.</td>
+              <td colspan="8" class="empty-cell">조건에 맞는 자재가 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -248,11 +225,9 @@ export default {
   computed: {
     summary() {
       const rows = this.materials
-      const danger = rows.filter((r) => r.status === 'danger').length
       const shortage = rows.filter((r) => r.status === 'shortage').length
       return {
         total: rows.length,
-        danger,
         shortage,
         normal: rows.filter((r) => r.status === 'normal').length
       }
@@ -268,7 +243,6 @@ export default {
         const q = id.toLowerCase()
         list = list.filter((r) => r.materialId.toLowerCase().includes(q))
       }
-      if (status === 'danger') list = list.filter((r) => r.status === 'danger')
       if (status === 'shortage') list = list.filter((r) => r.status === 'shortage')
       if (status === 'normal') list = list.filter((r) => r.status === 'normal')
 
@@ -346,12 +320,10 @@ export default {
       }
     },
     statusLabel(status) {
-      if (status === 'danger') return '위험'
       if (status === 'shortage') return '부족'
       return '정상'
     },
     statusClass(status) {
-      if (status === 'danger') return 'badge-danger'
       if (status === 'shortage') return 'badge-warning'
       return 'badge-normal'
     },
@@ -478,7 +450,7 @@ export default {
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -518,38 +490,24 @@ export default {
 }
 
 .stat-shortage {
-  color: #E63312;
-}
-
-.stat-danger {
-  color: #E63312;
+  color: #f19985;
 }
 
 .stat-warning {
-  color: #f19985;
+  color: #E63312;
 }
 
 .stat-normal {
   color: #00aad2;
 }
 
-.danger-banner {
+.shortage-banner {
   margin-bottom: 16px;
   padding: 14px 16px;
   border-radius: 12px;
   border: 1px solid #f6b8aa;
   background: #fdebe7;
   color: #c2412d;
-  font-weight: 600;
-}
-
-.shortage-banner {
-  margin-bottom: 16px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid #ffd8a8;
-  background: #fff4e6;
-  color: #9c4f00;
   font-weight: 600;
 }
 
@@ -721,12 +679,8 @@ export default {
   color: #002c5f;
 }
 
-.row-danger {
-  background-color: #fbd6cf;
-}
-
 .row-shortage {
-  background-color: #fdebe7;
+  background-color: #fbd6cf;
 }
 
 .badge {
@@ -742,12 +696,8 @@ export default {
   background-color: #00aad2;
 }
 
-.badge-danger {
-  background-color: #e63312;
-}
-
 .badge-warning {
-  background-color: #f19985;
+  background-color: #e63312;
   color: #fff;
 }
 
