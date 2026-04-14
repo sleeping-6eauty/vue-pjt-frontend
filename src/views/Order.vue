@@ -64,7 +64,7 @@
       <div class="panel table-panel">
         <div class="section-header">
           <h2>
-            주문 내역
+            주문 상세
             <span v-if="hasActiveFilters" class="filtered-count">({{ totalCount }}건)</span>
           </h2>
           <button class="csv-btn" type="button" @click="downloadCsv">CSV 다운로드</button>
@@ -107,7 +107,7 @@
         </div>
 
         <div class="pagination">
-          <button class="page-btn nav-btn" :disabled="page === 1" @click="changePage(page - 1)">이전</button>
+          <button class="page-btn nav-btn" :disabled="page === 1" @click="changePage(page - 1)" title="이전">◀</button>
           <button
             v-for="num in visiblePages"
             :key="num"
@@ -117,7 +117,7 @@
           >
             {{ num }}
           </button>
-          <button class="page-btn nav-btn" :disabled="page >= totalPages" @click="changePage(page + 1)">다음</button>
+          <button class="page-btn nav-btn" :disabled="page >= totalPages" @click="changePage(page + 1)" title="다음">▶</button>
         </div>
       </div>
 
@@ -141,7 +141,7 @@
           <div class="legend">
             <div class="legend-item" v-for="item in vehicleRatio" :key="item.vehicleType">
               <span class="legend-color" :style="{ background: colorMap[item.vehicleType] || '#999' }"></span>
-              <span>{{ item.vehicleType }} ({{ Math.round((item.ratio || 0) * 100) }}%)</span>
+              <span>{{ item.vehicleType }}</span>
             </div>
           </div>
         </div>
@@ -429,10 +429,11 @@ export default {
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.45);
-  border-radius: 18px;
+  background: #fff;
+  border-radius: 12px;
   padding: 22px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  border: 1px solid #eef0f2;
   margin-bottom: 24px;
 }
 
@@ -450,14 +451,15 @@ export default {
 }
 
 .summary-card {
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #eef0f2;
+  border-radius: 12px;
   padding: 18px 20px;
   display: flex;
   align-items: center;
   gap: 18px;
   min-height: 116px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .summary-icon {
@@ -510,10 +512,10 @@ export default {
 
 .csv-btn {
   height: 38px;
-  border: 1px solid #cfd6dd;
-  background: #f5f7f9;
+  border: 1px solid #dee2e6;
+  background: #fff;
   color: #425367;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 0 12px;
   font-weight: 700;
   cursor: pointer;
@@ -522,9 +524,9 @@ export default {
 .filter-select {
   width: 100%;
   height: 52px;
-  border-radius: 12px;
-  border: 1px solid #cfd5da;
-  background: #eff2f5;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  background: #fff;
   color: #2e3a45;
   padding: 0 12px;
   font-weight: 600;
@@ -533,9 +535,9 @@ export default {
 .reset-btn {
   width: 100%;
   height: 52px;
-  border: 0;
-  border-radius: 12px;
-  background: #dde1e3;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
   color: #4f5f72;
   font-weight: 700;
   cursor: pointer;
@@ -568,21 +570,24 @@ export default {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.95fr);
+  grid-template-columns: minmax(0, 2.5fr) minmax(280px, 0.8fr);
   gap: 24px;
 }
 
 .table-panel {
-  min-height: 620px;
   display: flex;
   flex-direction: column;
+  min-height: 620px;
 }
 
 .table-wrap {
-  border-radius: 14px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid #e1e1e1;
+  border-radius: 12px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #eef0f2;
+  flex: 1;
+  min-height: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .table-wrap table {
@@ -605,7 +610,7 @@ export default {
 }
 
 .table-wrap td {
-  background: rgba(255, 255, 255, 0.82);
+  background: #fff;
   color: #28323d;
   vertical-align: top;
 }
@@ -652,30 +657,39 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding-top: 22px;
+  gap: 8px;
+  padding-top: 20px;
+  flex-shrink: 0;
 }
 
 .page-btn {
   border: 1px solid #d6dbe2;
   background: #fff;
-  min-width: 36px;
-  padding: 0 10px;
-  height: 36px;
-  border-radius: 10px;
+  min-width: 32px;
+  padding: 0 8px;
+  height: 32px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .page-btn.active {
-  background: var(--navy);
+  background: #032f6c;
   color: #fff;
   font-weight: 700;
-  border-color: var(--navy);
+  border-color: #032f6c;
 }
 
 .page-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+}
+
+.page-btn.nav-btn {
+  min-width: 32px;
+  padding: 0;
+  font-size: 14px;
 }
 
 .page-dots {
@@ -684,7 +698,7 @@ export default {
 }
 
 .chart-panel {
-  min-height: 620px;
+  min-height: 480px;
 }
 
 .chart-wrap {
@@ -696,7 +710,7 @@ export default {
 }
 
 .pie-chart {
-  width: 330px;
+  width: 260px;
   aspect-ratio: 1;
   border-radius: 50%;
   background: conic-gradient(
@@ -706,7 +720,7 @@ export default {
     #4fa8ff 68% 100%
   );
   position: relative;
-  box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06), inset 0 0 0 6px #fff;
 }
 
 .pie-hole {
