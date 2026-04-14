@@ -1,8 +1,8 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <div class="logo">HYUNDAI</div> 
-      
+      <img src="@/assets/images/logo.png" style="width: 103px; height: 62px; margin-bottom: 30px;" alt="HYUNDAI Logo" class="logo-image" />
+
       <form @submit.prevent="handleLogin">
         <div class="input-group">
           <input type="email" v-model="form.email" placeholder="이메일" required />
@@ -15,7 +15,7 @@
           {{ loading ? '로그인 중...' : '로그인' }}
         </button>
       </form>
-      
+
       <div class="links">
         <router-link to="/signup">계정 등록</router-link>
       </div>
@@ -29,7 +29,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 import { useAuthStore } from '@/store/auth'
 
 export default {
-  name: 'Login',
+  name: 'LoginForm',
   data() {
     return {
       form: {
