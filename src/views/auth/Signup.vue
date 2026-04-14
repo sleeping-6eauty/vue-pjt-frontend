@@ -1,26 +1,30 @@
 <template>
-  <div class="signup-box">
-    <div class="logo">HYUNDAI</div> 
+  <div class="login-container">
+    <div class="signup-box">
+      <img src="@/assets/images/logo.png" style="width: 103px; height: 62px; margin-bottom: 30px;" alt="HYUNDAI Logo" class="logo-image" />
 
-    <form @submit.prevent="handleSignup">
-      <div class="input-group">
-        <input type="text" v-model="form.name" placeholder="이름" required />
+      <form @submit.prevent="handleSignup">
+        <div class="input-group">
+          <input type="text" v-model="form.name" placeholder="이름" required />
+        </div>
+        <div class="input-group">
+          <input type="email" v-model="form.email" placeholder="이메일" required />
+        </div>
+        <div class="input-group">
+          <input type="password" v-model="form.password" placeholder="비밀번호" required />
+        </div>
+        <div class="input-group">
+          <input type="number" v-model="form.employee_id" placeholder="사번" required />
+        </div>
+        <div v-if="message" class="message">{{ message }}</div>
+        <button type="submit" class="btn-primary" :disabled="loading">
+          {{ loading ? '회원가입 중...' : '회원가입' }}
+        </button>
+      </form>
+
+      <div class="links">
+        <router-link to="/login">취소</router-link>
       </div>
-      <div class="input-group">
-        <input type="email" v-model="form.email" placeholder="이메일" required />
-      </div>
-      <div class="input-group">
-        <input type="password" v-model="form.password" placeholder="비밀번호" required />
-      </div>
-      <div class="input-group">
-        <input type="number" v-model="form.employee_id" placeholder="사번" required />
-      </div>
-      <div v-if="message" class="message">{{ message }}</div>
-      <button type="submit" class="btn-primary">계정 등록</button>
-    </form>
-    
-    <div class="links">
-      <router-link to="/login" class="btn-cancel">취소</router-link>
     </div>
   </div>
 </template>
@@ -29,7 +33,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 export default {
-  name: 'Signup',
+  name: 'SignupForm',
   data() {
     return {
       form: {
@@ -38,12 +42,14 @@ export default {
         password: '',
         employee_id: ''
       },
-      message: ''
+      message: '',
+      loading: false
     }
   },
   methods: {
     async handleSignup() {
       this.message = ''
+      this.loading = true
 
       const employeeId = Number(this.form.employee_id)
       if (!employeeId || employeeId <= 0) {
@@ -85,6 +91,13 @@ export default {
 </script>
 
 <style scoped>
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #ffffff;
+}
 .signup-box {
   width: 400px;
   text-align: center;
@@ -127,11 +140,11 @@ input:focus {
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  margin-top: 20px;
+  margin-top: 10px;
 }
-
-.btn-primary:hover {
-  background-color: #001f42;
+.btn-primary:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
   .message {
@@ -146,5 +159,13 @@ input:focus {
   text-decoration: none;
   font-size: 14px;
   font-weight: bold;
+}
+.links {
+  margin-top: 20px;
+}
+.links a {
+  color: #666;
+  text-decoration: none;
+  font-size: 14px;
 }
 </style>
