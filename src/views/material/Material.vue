@@ -38,7 +38,6 @@
           type="search"
           class="filter-input"
           placeholder="자재명 검색"
-          @keydown.enter="applyFilters"
         />
       </div>
       <div class="filter-input-wrap">
@@ -48,7 +47,6 @@
           type="search"
           class="filter-input"
           placeholder="자재 ID 검색"
-          @keydown.enter="applyFilters"
         />
       </div>
       <label class="status-field">
@@ -59,7 +57,6 @@
           <option value="normal">정상</option>
         </select>
       </label>
-      <button type="button" class="btn-search" @click="applyFilters">검색</button>
     </div>
 
     <div class="table-card">
@@ -209,11 +206,6 @@ export default {
         id: '',
         status: 'all'
       },
-      applied: {
-        name: '',
-        id: '',
-        status: 'all'
-      },
       sortKey: 'materialId',
       sortDir: 'asc',
       pageSize: 10,
@@ -233,7 +225,7 @@ export default {
     },
     filteredRows() {
       let list = this.materials.slice()
-      const { name, id, status } = this.applied
+      const { name, id, status } = this.filters
       if (name) {
         const q = name.toLowerCase()
         list = list.filter((r) => r.name.toLowerCase().includes(q))
@@ -269,6 +261,12 @@ export default {
     }
   },
   watch: {
+    filters: {
+      deep: true,
+      handler() {
+        this.currentPage = 1
+      }
+    },
     filteredRows() {
       if (this.currentPage > this.totalPages) this.currentPage = this.totalPages
     }
@@ -287,14 +285,6 @@ export default {
         this.selectedIds = []
         window.alert(error.message || '서버에서 자재 데이터를 불러오지 못했습니다.')
       }
-    },
-    applyFilters() {
-      this.applied = {
-        name: this.filters.name,
-        id: this.filters.id,
-        status: this.filters.status
-      }
-      this.currentPage = 1
     },
     toggleSort(key) {
       if (this.sortKey === key) {
@@ -589,24 +579,6 @@ export default {
   font-size: 14px;
   background: #fff;
   font-family: inherit;
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: #ccc;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.18);
-}
-
-.btn-search {
-  min-width: 92px;
-  justify-content: center;
-  padding: 8px 14px;
-  color: #fff;
-  background: #002c5f;
-  border-radius: 12px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
 }
 
 .btn-order {

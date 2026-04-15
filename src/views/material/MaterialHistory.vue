@@ -9,7 +9,7 @@
     <MaterialTabs />
 
     <div class="timeline-card">
-      <div v-for="item in historyRows" :key="item.id" class="timeline-row">
+      <div v-for="item in pagedRows" :key="item.id" class="timeline-row">
         <div class="timeline-date">
           <strong>{{ item.date }}</strong>
           <span>{{ item.time }}</span>
@@ -29,7 +29,39 @@
           </p>
         </div>
       </div>
+      <div v-if="!pagedRows.length" class="empty-cell">표시할 이력이 없습니다.</div>
     </div>
+
+    <nav class="pagination" aria-label="페이지">
+      <button
+        type="button"
+        class="page-btn"
+        :disabled="currentPage <= 1"
+        aria-label="이전 페이지"
+        @click="currentPage -= 1"
+      >
+        &lt;
+      </button>
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        type="button"
+        class="page-btn page-num"
+        :class="{ 'is-active': currentPage === page }"
+        @click="currentPage = page"
+      >
+        {{ page }}
+      </button>
+      <button
+        type="button"
+        class="page-btn"
+        :disabled="currentPage >= totalPages"
+        aria-label="다음 페이지"
+        @click="currentPage += 1"
+      >
+        &gt;
+      </button>
+    </nav>
   </div>
 </template>
 
@@ -42,7 +74,23 @@ export default {
   components: { MaterialTabs },
   data() {
     return {
-      historyRows: []
+      historyRows: [],
+      pageSize: 10,
+      currentPage: 1
+    }
+  },
+  computed: {
+    totalPages() {
+      return Math.max(1, Math.ceil(this.historyRows.length / this.pageSize))
+    },
+    pagedRows() {
+      const start = (this.currentPage - 1) * this.pageSize
+      return this.historyRows.slice(start, start + this.pageSize)
+    }
+  },
+  watch: {
+    historyRows() {
+      if (this.currentPage > this.totalPages) this.currentPage = this.totalPages
     }
   },
   async mounted() {
@@ -96,6 +144,12 @@ export default {
 
 .timeline-row:last-child {
   border-bottom: none;
+}
+
+.empty-cell {
+  padding: 40px;
+  text-align: center;
+  color: #888;
 }
 
 .timeline-date {
@@ -154,6 +208,54 @@ export default {
 
 .minus {
   color: #E63312;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.page-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dee2e6;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #333;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f1f3f5;
+  border-color: #ced4da;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-num {
+  min-width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-weight: 700;
+  color: #333;
+  background: #fff;
+}
+
+.page-num.is-active {
+  border-color: #002c5f;
+  color: #002c5f;
 }
 
 @media (max-width: 768px) {
