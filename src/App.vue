@@ -3,8 +3,14 @@
 </template>
 
 <script>
+import { useAuthStore } from '@/store/auth'
+
 export default {
-  name: 'App'
+  name: 'App',
+  created() {
+    const authStore = useAuthStore()
+    authStore.initializeAuth()
+  }
 }
 </script>
 
