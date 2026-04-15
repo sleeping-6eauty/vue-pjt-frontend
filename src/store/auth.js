@@ -11,17 +11,29 @@ export const useAuthStore = defineStore('auth', {
   },
   actions: {
     login(userData, token) {
-      this.user = userData;
-      this.token = token;
-      // 필요시 localStorage나 sessionStorage에 토큰 저장
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('userRole', userData.role);
+      this.user = userData
+      this.token = token
+
+      localStorage.setItem('authToken', token)
+      localStorage.setItem('authUser', JSON.stringify(userData))
+      localStorage.setItem('userRole', userData.role)
     },
+
     logout() {
-      this.user = null;
-      this.token = null;
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userRole');
+      this.user = null
+      this.token = null
+
+      localStorage.removeItem('authToken')
+      localStorage.removeItem('authUser')
+      localStorage.removeItem('userRole')
+    },
+
+    initializeAuth() {
+      const token = localStorage.getItem('authToken')
+      const user = localStorage.getItem('authUser')
+
+      this.token = token || null
+      this.user = user ? JSON.parse(user) : null
     }
   }
 })
