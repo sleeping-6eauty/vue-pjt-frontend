@@ -162,7 +162,7 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
-const API_BASE = "http://127.0.0.1:8080";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default {
   name: "Order",
@@ -298,7 +298,7 @@ export default {
   methods: {
     async fetchSummary() {
       try {
-        const res = await fetch(`${API_BASE}/orders/summary`);
+        const res = await fetch(`${API_BASE_URL}/orders/summary`);
         this.summary = await res.json();
       } catch (error) {
         console.error("요약 정보 로드 실패:", error);
@@ -306,7 +306,7 @@ export default {
     },
     async fetchVehicleRatio() {
       try {
-        const res = await fetch(`${API_BASE}/orders/vehicle-ratio`);
+        const res = await fetch(`${API_BASE_URL}/orders/vehicle-ratio`);
         const data = await res.json();
         this.vehicleRatio = Array.isArray(data) ? data : data.value || [];
       } catch (error) {
@@ -315,7 +315,7 @@ export default {
     },
     async fetchFilterOptions() {
       try {
-        const res = await fetch(`${API_BASE}/orders/filter-options`);
+        const res = await fetch(`${API_BASE_URL}/orders/filter-options`);
         this.filterOptions = await res.json();
       } catch (error) {
         console.error("필터 옵션 로드 실패:", error);
@@ -324,7 +324,7 @@ export default {
     async fetchTotalCount() {
       try {
         const params = this.buildFilterParams();
-        const res = await fetch(`${API_BASE}/orders/table/count?${params.toString()}`);
+        const res = await fetch(`${API_BASE_URL}/orders/table/count?${params.toString()}`);
         const data = await res.json();
         this.totalCount = Number(data || 0);
       } catch (error) {
@@ -348,7 +348,7 @@ export default {
     async fetchTableRows() {
       try {
         const params = this.buildFilterParams(true);
-        const res = await fetch(`${API_BASE}/orders/table?${params.toString()}`);
+        const res = await fetch(`${API_BASE_URL}/orders/table?${params.toString()}`);
         const data = await res.json();
         this.tableRows = Array.isArray(data) ? data : data.value || [];
       } catch (error) {
@@ -394,7 +394,7 @@ export default {
         params.set("page", "1");
         params.set("size", String(Math.max(this.totalCount, 1)));
 
-        const res = await fetch(`${API_BASE}/orders/table?${params.toString()}`);
+        const res = await fetch(`${API_BASE_URL}/orders/table?${params.toString()}`);
         const data = await res.json();
         const rows = Array.isArray(data) ? data : data.value || [];
         if (!rows.length) {
