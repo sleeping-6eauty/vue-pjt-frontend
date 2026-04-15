@@ -1,10 +1,10 @@
 <template>
+  <div style="font-size: 25px; font-weight: bold; margin-bottom: 24px;">주문 현황 집계</div>
   <div class="order-container">
-    <section class="panel summary-panel">
-      <h1>주문 현황 집계</h1>
+
       <div class="summary-cards">
         <article class="summary-card">
-          <img src="@/assets/images/order_status_total.png" alt="총 주문" class="card-icon" />
+
           <div class="summary-text">
             <p>총 주문 건수</p>
             <strong>{{ summary.totalOrders }}</strong>
@@ -12,22 +12,19 @@
         </article>
 
         <article class="summary-card">
-          <img src="@/assets/images/order_status_pending.png" alt="대기 주문" class="card-icon" />
           <div class="summary-text">
             <p>대기 중인 주문</p>
-            <strong>{{ summary.pendingOrders }}</strong>
+            <strong style="color: #b97710;">{{ summary.pendingOrders }}</strong>
           </div>
         </article>
 
         <article class="summary-card">
-          <img src="@/assets/images/order_status_completed.png" alt="완료 주문" class="card-icon" />
           <div class="summary-text">
             <p>완료된 주문</p>
-            <strong>{{ summary.completedOrders }}</strong>
+            <strong style="color: #2f66c9;">{{ summary.completedOrders }}</strong>
           </div>
         </article>
       </div>
-    </section>
 
     <section class="panel filter-panel">
       <div class="filters-grid">
@@ -454,11 +451,10 @@ export default {
   background: #fff;
   border: 1px solid #eef0f2;
   border-radius: 12px;
-  padding: 18px 20px;
+  padding: 30px 20px;
   display: flex;
   align-items: center;
-  gap: 18px;
-  min-height: 116px;
+  /* gap: 18px; */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
@@ -472,13 +468,14 @@ export default {
 .summary-text p {
   margin: 0 0 6px;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: bold;
+  color: #666;
 }
 
 .summary-text strong {
-  font-size: 42px;
+  font-size: 40px;
   line-height: 1;
-  font-weight: 800;
+  font-weight: bold;
 }
 
 .card-icon {

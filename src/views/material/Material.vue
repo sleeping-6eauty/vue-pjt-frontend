@@ -11,15 +11,15 @@
     <section class="stats-row" aria-label="자재 요약">
       <article class="stat-card">
         <p class="stat-label">전체 자재</p>
-        <p class="stat-value">{{ summary.total }}<span class="unit">개</span></p>
+        <p class="stat-value">{{ summary.total }}</p>
       </article>
       <article class="stat-card">
         <p class="stat-label">주문 필요 항목</p>
-        <p class="stat-value stat-warning">{{ summary.shortage }}<span class="unit">개</span></p>
+        <p class="stat-value stat-warning">{{ summary.shortage }}</p>
       </article>
       <article class="stat-card">
         <p class="stat-label">정상 자재</p>
-        <p class="stat-value stat-normal">{{ summary.normal }}<span class="unit">개</span></p>
+        <p class="stat-value stat-normal">{{ summary.normal }}</p>
       </article>
     </section>
 
@@ -453,30 +453,30 @@ export default {
 .stat-card {
   background: #fff;
   border-radius: 12px;
-  padding: 20px 24px;
+  padding: 30px 24px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   border: 1px solid #eef0f2;
 }
 
 .stat-label {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: 16px;
   color: #666;
   font-weight: bold;
 }
 
 .stat-value {
   margin: 0;
-  font-size: 26px;
+  font-size: 40px;
   font-weight: bold;
   color: #111;
 }
 
-.stat-value .unit {
-  font-size: 16px;
+/* .stat-value .unit {
+  font-size: 25px;
   font-weight: bold;
   margin-left: 2px;
-}
+} */
 
 .stat-shortage {
   color: #f19985;
