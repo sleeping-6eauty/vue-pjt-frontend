@@ -3,7 +3,6 @@
     <header class="page-header">
       <div>
         <h1 class="page-title">자재 관리</h1>
-        <p class="page-description">최신 자재 상태를 확인할 수 있습니다.</p>
       </div>
     </header>
 
@@ -33,7 +32,7 @@
 
     <div class="filter-bar">
       <div class="filter-input-wrap">
-        <span class="input-icon search" aria-hidden="true" />
+        <span class="input-icon" aria-hidden="true" >⌕</span>
         <input
           v-model.trim="filters.name"
           type="search"
@@ -43,7 +42,7 @@
         />
       </div>
       <div class="filter-input-wrap">
-        <span class="input-icon search" aria-hidden="true" />
+        <span class="input-icon" aria-hidden="true" >⌕</span>
         <input
           v-model.trim="filters.id"
           type="search"
@@ -60,7 +59,7 @@
           <option value="normal">정상</option>
         </select>
       </label>
-      <button type="button" class="btn btn-outline btn-search" @click="applyFilters">검색</button>
+      <button type="button" class="btn-search" @click="applyFilters">검색</button>
     </div>
 
     <div class="table-card">
@@ -390,7 +389,7 @@ export default {
 
 .page-title {
   margin: 0 0 8px;
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 700;
   color: #111;
 }
@@ -420,13 +419,13 @@ export default {
 }
 
 .btn-outline:hover {
-  background: #f8f9fa;
+  background: #f1f3f5;
 }
 
 .btn-icon {
   font-size: 18px;
   line-height: 1;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 .btn-icon.doc {
@@ -473,19 +472,19 @@ export default {
   margin: 0 0 8px;
   font-size: 14px;
   color: #666;
-  font-weight: 600;
+  font-weight: bold;
 }
 
 .stat-value {
   margin: 0;
   font-size: 26px;
-  font-weight: 700;
+  font-weight: bold;
   color: #111;
 }
 
 .stat-value .unit {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: bold;
   margin-left: 2px;
 }
 
@@ -508,7 +507,7 @@ export default {
   border: 1px solid #f6b8aa;
   background: #fdebe7;
   color: #c2412d;
-  font-weight: 600;
+  font-weight: bold;
 }
 
 .normal-banner {
@@ -518,7 +517,7 @@ export default {
   border: 1px solid #a6dbe8;
   background: #e6f6fb;
   color: #007fa3;
-  font-weight: 600;
+  font-weight: bold;
 }
 
 .filter-bar {
@@ -529,7 +528,7 @@ export default {
   margin-bottom: 16px;
   padding: 14px 16px;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid #eef0f2;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
 }
@@ -538,39 +537,36 @@ export default {
   position: relative;
   flex: 1 1 180px;
   min-width: 160px;
+  input:focus {
+    /* border: 2px solid #999; */
+    outline: none;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.18);
+  }
+  input {
+    height: 45px;
+    box-sizing: border-box;
+  }
 }
 
 .filter-input {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 12px 10px 36px;
-  border: 1px solid #dee2e6;
+  border: none;
   border-radius: 8px;
   font-size: 14px;
+  background-color: #F1F3F5;
 }
 
-.input-icon.search {
+.input-icon {
   position: absolute;
+  color: #8a8a8a;
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  border: 2px solid #adb5bd;
+  font-size: 30px;
   border-radius: 50%;
   pointer-events: none;
-}
-
-.input-icon.search::after {
-  content: '';
-  position: absolute;
-  width: 6px;
-  height: 2px;
-  background: #adb5bd;
-  right: -4px;
-  bottom: -2px;
-  transform: rotate(45deg);
-  border-radius: 1px;
 }
 
 .status-field {
@@ -581,8 +577,8 @@ export default {
 }
 
 .status-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: bold;
   color: #555;
 }
 
@@ -595,9 +591,22 @@ export default {
   font-family: inherit;
 }
 
+.filter-select:focus {
+  outline: none;
+  border-color: #ccc;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.18);
+}
+
 .btn-search {
-  padding-left: 24px;
-  padding-right: 24px;
+  min-width: 92px;
+  justify-content: center;
+  padding: 8px 14px;
+  color: #fff;
+  background: #002c5f;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 .btn-order {
@@ -642,7 +651,7 @@ export default {
 
 .data-table th {
   background: #f8f9fa;
-  font-weight: 700;
+  font-weight: bold;
   color: #333;
 }
 
@@ -659,7 +668,7 @@ export default {
   padding: 0;
   margin: 0;
   font: inherit;
-  font-weight: 700;
+  font-weight: bold;
   color: inherit;
   cursor: pointer;
 }
@@ -684,11 +693,14 @@ export default {
 }
 
 .badge {
-  display: inline-block;
-  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: bold;
+  min-width: 50px;
+  min-height: 30px;
   color: #fff;
 }
 
@@ -753,7 +765,7 @@ export default {
   justify-content: center;
   border: 1px solid #dee2e6;
   border-radius: 8px;
-  font-weight: 700;
+  font-weight: bold;
   color: #333;
   background: #fff;
 }
