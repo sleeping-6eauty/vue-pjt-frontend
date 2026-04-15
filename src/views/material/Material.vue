@@ -129,13 +129,6 @@
                   <button
                     type="button"
                     class="btn btn-outline btn-order"
-                    @click="useStock(row.materialId)"
-                  >
-                    사용
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline btn-order"
                     @click="adjustStock(row.materialId)"
                   >
                     조정
@@ -189,8 +182,7 @@ import MaterialTabs from '@/components/material/MaterialTabs.vue'
 import {
   adjustMaterialStock,
   loadMaterials,
-  requestMaterialOrder,
-  useMaterialStock
+  requestMaterialOrder
 } from '../../store/material'
 
 export default {
@@ -340,15 +332,6 @@ export default {
       } catch (error) {
         console.error('Failed to request material order:', error)
         window.alert(error.message || '주문요청 처리에 실패했습니다.')
-      }
-    },
-    async useStock(materialId) {
-      try {
-        await useMaterialStock(materialId)
-        await this.refreshMaterials()
-      } catch (error) {
-        console.error('Failed to use material stock:', error)
-        window.alert(error.message || '자재 사용 처리에 실패했습니다.')
       }
     },
     async adjustStock(materialId) {

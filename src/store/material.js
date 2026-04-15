@@ -108,13 +108,6 @@ export async function requestMaterialOrder(materialId) {
   return payload ? enrichMaterial(payload) : null
 }
 
-export async function useMaterialStock(materialId) {
-  const payload = await requestJson(`/api/materials/${encodeURIComponent(materialId)}/use`, {
-    method: 'POST'
-  })
-  return payload ? enrichMaterial(payload) : null
-}
-
 export async function adjustMaterialStock(materialId, nextStock) {
   const amount = Number(nextStock)
   if (!Number.isFinite(amount) || amount < 0) {
