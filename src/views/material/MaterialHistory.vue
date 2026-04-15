@@ -75,7 +75,7 @@ export default {
   data() {
     return {
       historyRows: [],
-      pageSize: 10,
+      pageSize: 5,
       currentPage: 1
     }
   },
