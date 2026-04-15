@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar">
     <div class="logo-area">
-      <img src="@/assets/images/logo.png" style="width: 103px; height: 62px;" alt="HYUNDAI Logo" class="logo-image" />
+      <img src="@/assets/images/logo.png" style="width: 103px; height: 62px;" alt="Logo" class="logo-image" />
     </div>
 
     <nav class="menu-nav">

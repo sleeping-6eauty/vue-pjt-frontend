@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="signup-box">
-      <img src="@/assets/images/logo.png" style="width: 103px; height: 62px; margin-bottom: 30px;" alt="HYUNDAI Logo" class="logo-image" />
+      <img src="@/assets/images/logo.png" style="width: 103px; height: 62px; margin-bottom: 30px;" alt="Logo" class="logo-image" />
 
       <form @submit.prevent="handleSignup">
         <div class="input-group">
