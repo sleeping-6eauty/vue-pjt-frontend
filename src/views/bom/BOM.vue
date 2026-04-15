@@ -218,6 +218,8 @@ onMounted(() => {
   justify-content: space-between;
   padding-left: 30px;
   padding-right: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eef0f2;
 }
 
 .tab-btn {
@@ -246,6 +248,7 @@ onMounted(() => {
   padding: 0 16px;
   gap: 10px;
   box-sizing: border-box;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .search-icon {
@@ -279,6 +282,8 @@ onMounted(() => {
   padding: 20px;
   min-height: 580px;
   box-sizing: border-box;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  border: 1px solid #eef0f2;
 }
 
 .card-title {
@@ -334,7 +339,7 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 76px;
+  min-width: 50px;
   height: 36px;
   padding: 0 16px;
   border-radius: 14px;

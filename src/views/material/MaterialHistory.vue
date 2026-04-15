@@ -3,7 +3,6 @@
     <header class="page-header">
       <div>
         <h1 class="page-title">자재 관리</h1>
-        <p class="page-description">입고, 사용, 조정 기준으로 최근 재고 변동 내역을 추적합니다.</p>
       </div>
     </header>
 
@@ -64,13 +63,13 @@ export default {
 }
 
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
 .page-title {
   margin: 0 0 8px;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 25px;
+  font-weight: bold;
   color: #111;
 }
 
@@ -133,8 +132,8 @@ export default {
   padding: 4px 12px;
   border-radius: 999px;
   color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: bold;
 }
 
 .change-badge.in {
