@@ -120,6 +120,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const categories = ["전체", "엔진", "구동", "타이어", "시트", "옵션"];
 const selectedCategory = ref("전체");
@@ -145,7 +146,7 @@ const loadBomPage = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await fetch("http://localhost:8080/api/bom/page");
+    const response = await fetch(`${API_BASE_URL}/api/bom/page`);
 
     if (!response.ok) {
       throw new Error("서버 응답 오류");
