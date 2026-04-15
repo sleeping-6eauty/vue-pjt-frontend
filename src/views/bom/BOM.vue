@@ -42,7 +42,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in filteredBomList" :key="item.id">
+                <tr v-for="item in pagedBomList" :key="item.id">
                   <td>{{ item.partNo }}</td>
                   <td>{{ item.name }}</td>
                   <td>{{ item.quantity }}</td>
@@ -54,12 +54,43 @@
                     </span>
                   </td>
                 </tr>
-                <tr v-if="filteredBomList.length === 0">
+                <tr v-if="pagedBomList.length === 0">
                   <td colspan="6">검색 결과가 없습니다.</td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          <nav class="pagination" aria-label="페이지">
+            <button
+              type="button"
+              class="page-btn"
+              :disabled="currentPage <= 1"
+              aria-label="이전 페이지"
+              @click="currentPage -= 1"
+            >
+              &lt;
+            </button>
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              type="button"
+              class="page-btn page-num"
+              :class="{ 'is-active': currentPage === page }"
+              @click="currentPage = page"
+            >
+              {{ page }}
+            </button>
+            <button
+              type="button"
+              class="page-btn"
+              :disabled="currentPage >= totalPages"
+              aria-label="다음 페이지"
+              @click="currentPage += 1"
+            >
+              &gt;
+            </button>
+          </nav>
         </section>
 
         <aside class="price-card">
@@ -89,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 
 const categories = ["전체", "엔진", "구동", "타이어", "시트", "옵션"];
 const selectedCategory = ref("전체");
@@ -99,6 +130,8 @@ const bomList = ref([]);
 const priceList = ref([]);
 const loading = ref(false);
 const errorMessage = ref("");
+const currentPage = ref(1);
+const pageSize = ref(10);
 
 const getBadgeType = (car) => {
   if (car === "G70") return "mint";
@@ -157,6 +190,26 @@ const filteredBomList = computed(() => {
   });
 });
 
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredBomList.value.length / pageSize.value))
+);
+
+const visiblePages = computed(() => {
+  const pages = [];
+  let start = Math.max(1, currentPage.value - 2);
+  let end = Math.min(totalPages.value, start + 4);
+  start = Math.max(1, end - 4);
+  for (let page = start; page <= end; page += 1) {
+    pages.push(page);
+  }
+  return pages;
+});
+
+const pagedBomList = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return filteredBomList.value.slice(start, start + pageSize.value);
+});
+
 const filteredPriceList = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase();
 
@@ -173,6 +226,16 @@ const filteredPriceList = computed(() => {
 
     return matchCategory && matchKeyword;
   });
+});
+
+watch([selectedCategory, searchKeyword], () => {
+  currentPage.value = 1;
+});
+
+watch(filteredBomList, () => {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value;
+  }
 });
 
 onMounted(() => {
@@ -359,6 +422,54 @@ onMounted(() => {
 .car-badge.beige {
   background: #d8d0c9;
   color: #fff;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.page-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dee2e6;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #333;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f1f3f5;
+  border-color: #ced4da;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-num {
+  min-width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-weight: 700;
+  color: #333;
+  background: #fff;
+}
+
+.page-num.is-active {
+  border-color: #002c5f;
+  color: #002c5f;
 }
 
 .price-list {
