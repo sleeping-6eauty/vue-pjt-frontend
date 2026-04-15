@@ -3,28 +3,27 @@
     <section class="bom-page">
       <h2 class="page-title">자재 카테고리</h2>
 
-      <div class="top-bar">
-        <div class="category-tabs">
-          <button
-            v-for="category in categories"
-            :key="category"
-            :class="['tab-btn', { active: selectedCategory === category }]"
-            @click="selectedCategory = category"
-          >
-            {{ category }}
-          </button>
-        </div>
+        <div class="top-bar">
+          <div class="category-tabs">
+            <button
+              v-for="category in categories"
+              :key="category"
+              :class="['tab-btn', { active: selectedCategory === category }]"
+              @click="selectedCategory = category"
+            >
+              {{ category }}
+            </button>
+          </div>
 
-        <div class="search-box">
-          <span class="search-icon">⌕</span>
-          <input
-            v-model="searchKeyword"
-            type="text"
-            placeholder="자재명을 검색하세요."
-          />
+          <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input
+              v-model="searchKeyword"
+              type="text"
+              placeholder="자재명 검색"
+            />
+          </div>
         </div>
-      </div>
-
       <div class="content-grid">
         <section class="bom-card">
           <h3 class="card-title">BOM 조회</h3>
@@ -131,7 +130,7 @@ const priceList = ref([]);
 const loading = ref(false);
 const errorMessage = ref("");
 const currentPage = ref(1);
-const pageSize = ref(10);
+const pageSize = ref(5);
 
 const getBadgeType = (car) => {
   if (car === "G70") return "mint";
@@ -266,6 +265,10 @@ onMounted(() => {
   grid-template-columns: 2.6fr 0.9fr;
   gap: 20px;
   margin-bottom: 26px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  border-radius: 12px;
 }
 
 .category-tabs {
@@ -274,14 +277,13 @@ onMounted(() => {
   align-items: center;
   gap: 10px;
   background: #F1F3F5;
-  border-radius: 16px;
+  border-radius: 30px;
   padding: 8px;
   min-height: 56px;
   box-sizing: border-box;
   justify-content: space-between;
   padding-left: 30px;
   padding-right: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border: 1px solid #eef0f2;
 }
 
@@ -305,13 +307,12 @@ onMounted(() => {
   min-width: 0;
   height: 56px;
   background: #F1F3F5;
-  border-radius: 16px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   padding: 0 16px;
   gap: 10px;
   box-sizing: border-box;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .search-icon {
@@ -341,9 +342,9 @@ onMounted(() => {
 .bom-card,
 .price-card {
   background: #ffffff;
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 20px;
-  min-height: 580px;
+  min-height: 650px;
   box-sizing: border-box;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   border: 1px solid #eef0f2;
@@ -405,7 +406,7 @@ onMounted(() => {
   min-width: 50px;
   height: 36px;
   padding: 0 16px;
-  border-radius: 14px;
+  border-radius: 12px;
   font-weight: 700;
   font-size: 14px;
   color: white;

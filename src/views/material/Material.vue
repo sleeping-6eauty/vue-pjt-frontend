@@ -208,7 +208,7 @@ export default {
       },
       sortKey: 'materialId',
       sortDir: 'asc',
-      pageSize: 10,
+      pageSize: 5,
       currentPage: 1,
       selectedIds: []
     }
@@ -526,7 +526,7 @@ export default {
   align-items: flex-end;
   gap: 12px;
   margin-bottom: 16px;
-  padding: 14px 16px;
+  padding: 20px 16px;
   background: #fff;
   border-radius: 16px;
   border: 1px solid #eef0f2;

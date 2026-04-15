@@ -1,6 +1,6 @@
 <template>
-  <div class="permission-page">
-    <h2>이용자 목록</h2>
+  <div style="font-size: 25px; font-weight: bold; margin-bottom: 24px;">이용자 목록</div>
+  <div class="permission-page" style="margin-bottom: 30px;">
 
     <div v-if="error" class="error-message">{{ error }}</div>
     <div v-if="loading" class="loading">로딩 중...</div>
@@ -17,6 +17,7 @@
       </button>
     </div>
 
+
     <div class="search-bar">
       <select v-model="searchType">
         <option value="name">이름</option>
@@ -28,9 +29,11 @@
         placeholder="검색 내용"
         @keyup.enter="handleSearch"
       />
+
       <button type="button" class="btn-search" @click="handleSearch">검색</button>
     </div>
-
+  </div>
+  <div class="permission-page">
     <table class="data-table">
       <thead>
         <tr>
@@ -386,7 +389,7 @@ export default {
 <style scoped>
 .permission-page {
   background: white;
-  padding: 30px;
+  padding: 20px;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
@@ -452,21 +455,33 @@ export default {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  background: #f1f3f5;
+  /* background: #f1f3f5; */
   padding: 10px;
   border-radius: 10px;
 }
 
 .search-bar select,
-.search-bar input,
 .btn-search {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
+  font-size: 15px;
+  min-width: 130px;
 }
 
+
 .search-bar input {
-  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 56px;
+  background: #F1F3F5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  box-sizing: border-box;
+  border: none;
 }
 
 .btn-search {
@@ -474,7 +489,8 @@ export default {
   color: white;
   border: none;
   cursor: pointer;
-  min-width: 72px;
+  min-width: 90px;
+  border-radius: 12px;
 }
 
 .data-table {
@@ -575,4 +591,6 @@ export default {
   border-color: #002c5f;
   color: #002c5f;
 }
+
+
 </style>

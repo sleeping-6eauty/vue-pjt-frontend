@@ -60,7 +60,7 @@
     <section class="dashboard-grid">
       <div class="panel table-panel">
         <div class="section-header">
-          <h2>
+          <h2 style="font-size: 25px;">
             주문 상세
             <span v-if="hasActiveFilters" class="filtered-count">({{ totalCount }}건)</span>
           </h2>
@@ -137,26 +137,12 @@
 
       <div class="panel chart-panel">
         <div class="section-header">
-          <h2>차종별 주문 비율</h2>
+          <h2 style="font-size: 25px;">차종별 주문 비율</h2>
         </div>
 
         <div class="chart-wrap">
-          <div class="pie-chart" :style="{ background: pieGradient }" aria-label="차종별 주문 비율 차트">
-            <div
-              class="pie-label"
-              v-for="segment in chartSegments"
-              :key="segment.vehicleType"
-              :style="{ top: segment.top, left: segment.left }"
-            >
-              {{ segment.percentText }}
-            </div>
-          </div>
-
-          <div class="legend">
-            <div class="legend-item" v-for="item in vehicleRatio" :key="item.vehicleType">
-              <span class="legend-color" :style="{ background: colorMap[item.vehicleType] || '#999' }"></span>
-              <span>{{ item.vehicleType }}</span>
-            </div>
+          <div class="chart-box">
+            <Pie :data="pieChartData" :options="pieChartOptions" />
           </div>
         </div>
       </div>
@@ -165,10 +151,24 @@
 </template>
 
 <script>
+import { Pie } from "vue-chartjs";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+
+ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
+
 const API_BASE = "http://127.0.0.1:8080";
 
 export default {
-  name: 'Order',
+  name: "Order",
+  components: {
+    Pie,
+  },
   data() {
     return {
       loading: false,
@@ -199,9 +199,9 @@ export default {
         option: "",
       },
       colorMap: {
-        G70: "#4fa8ff",
-        G80: "#5fbe73",
-        G90: "#ffae3a",
+        G70: "#79cfe5",
+        G80: "#9dbfdf",
+        G90: "#d8d0c9",
       },
     };
   },
@@ -222,40 +222,77 @@ export default {
       }
       return pages;
     },
-    pieGradient() {
-      if (!this.vehicleRatio.length) {
-        return "conic-gradient(#d9dde2 0 100%)";
-      }
 
-      let current = 0;
-      const segments = this.vehicleRatio.map((item) => {
-        const ratio = Number(item.ratio || 0);
-        const start = current;
-        current += ratio * 100;
-        return `${this.colorMap[item.vehicleType] || "#999"} ${start}% ${current}%`;
-      });
-      return `conic-gradient(from -90deg, ${segments.join(", ")})`;
+    pieChartData() {
+      return {
+        labels: this.vehicleRatio.map((item) => item.vehicleType),
+        datasets: [
+          {
+            data: this.vehicleRatio.map((item) =>
+              Math.round(Number(item.ratio || 0) * 100)
+            ),
+            backgroundColor: this.vehicleRatio.map(
+              (item) => this.colorMap[item.vehicleType] || "#999999"
+            ),
+            borderColor: "#ffffff",
+            borderWidth: 4,
+            hoverOffset: 8,
+          },
+        ],
+      };
     },
-    chartSegments() {
-      let current = -90;
-      const radius = 34;
 
-      return this.vehicleRatio.slice(0, 3).map((item) => {
-        const ratio = Number(item.ratio || 0);
-        const angleSize = ratio * 360;
-        const mid = current + angleSize / 2;
-        const rad = (mid * Math.PI) / 180;
-        const x = 50 + radius * Math.cos(rad);
-        const y = 50 + radius * Math.sin(rad);
-        current += angleSize;
-
-        return {
-          vehicleType: item.vehicleType,
-          percentText: `${Math.round(ratio * 100)}%`,
-          top: `${y}%`,
-          left: `${x}%`,
-        };
-      });
+    pieChartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: 10,
+        },
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              usePointStyle: true,
+              pointStyle: "rectRounded",
+              boxWidth: 14,
+              boxHeight: 14,
+              padding: 24,
+              color: "#1f2d3d",
+              font: {
+                size: 16,
+                weight: "bold",
+                family: "Pretendard, 'Noto Sans KR', 'Malgun Gothic', sans-serif",
+              },
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.label}: ${context.raw}%`,
+            },
+          },
+          datalabels: {
+            formatter: (value) => `${value}%`,
+            color: "#23313f",
+            backgroundColor: "rgba(255,255,255,0.92)",
+            borderRadius: 999,
+            padding: {
+              top: 4,
+              bottom: 4,
+              left: 8,
+              right: 8,
+            },
+            font: {
+              size: 16,
+              weight: "bold",
+              family: "Pretendard, 'Noto Sans KR', 'Malgun Gothic', sans-serif",
+            },
+            anchor: "center",
+            align: "center",
+            clamp: true,
+          },
+        },
+      };
     },
   },
   methods: {
@@ -411,7 +448,11 @@ export default {
   async mounted() {
     try {
       this.loading = true;
-      await Promise.all([this.fetchSummary(), this.fetchVehicleRatio(), this.fetchFilterOptions()]);
+      await Promise.all([
+        this.fetchSummary(),
+        this.fetchVehicleRatio(),
+        this.fetchFilterOptions(),
+      ]);
       await this.refreshTable();
     } catch (error) {
       console.error("초기 데이터 로딩 실패:", error);
@@ -532,7 +573,7 @@ export default {
   color: #425367;
   border-radius: 8px;
   padding: 0 12px;
-  font-weight: 700;
+  font-weight: bold;
   cursor: pointer;
 }
 
@@ -544,17 +585,19 @@ export default {
   background: #fff;
   color: #2e3a45;
   padding: 0 12px;
-  font-weight: 600;
+  font-weight: bold;
 }
+
+
 
 .reset-btn {
   width: 100%;
   height: 52px;
+  background-color: #002c5f;
+  color: white;
   border: 1px solid #dee2e6;
   border-radius: 8px;
-  background: #fff;
-  color: #4f5f72;
-  font-weight: 700;
+  font-weight: bold;
   cursor: pointer;
 }
 
@@ -599,10 +642,10 @@ export default {
   border-radius: 12px;
   overflow: auto;
   background: #fff;
-  border: 1px solid #eef0f2;
+  /* border: 1px solid #eef0f2; */
   flex: 1;
   min-height: 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); */
 }
 
 .table-wrap table {
@@ -621,7 +664,7 @@ export default {
 .table-wrap th {
   background: #f1f3f5;
   color: #525f70;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 .table-wrap td {
@@ -673,7 +716,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding-top: 20px;
+  padding-top: 10px;
   flex-shrink: 0;
 }
 
@@ -707,7 +750,7 @@ export default {
   justify-content: center;
   border: 1px solid #dee2e6;
   border-radius: 8px;
-  font-weight: 700;
+  font-weight: bold;
   color: #333;
   background: #fff;
 }
@@ -735,9 +778,9 @@ export default {
   border-radius: 50%;
   background: conic-gradient(
     from -90deg,
-    #5fbe73 0 48%,
-    #ffae3a 48% 68%,
-    #4fa8ff 68% 100%
+    #79cfe5 0 48%,
+    #9dbfdf 48% 68%,
+    #d8d0c9 68% 100%
   );
   position: relative;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06), inset 0 0 0 6px #fff;
@@ -749,11 +792,24 @@ export default {
 
 .pie-label {
   position: absolute;
-  color: #fff;
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #23313f;
+  font-size: 18px;
   font-weight: 800;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  line-height: 1;
   transform: translate(-50%, -50%);
+  text-shadow: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  backface-visibility: hidden;
 }
 
 .legend {
@@ -769,7 +825,7 @@ export default {
   align-items: center;
   gap: 10px;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 .legend-color {
@@ -779,13 +835,13 @@ export default {
 }
 
 .legend-color.g70 {
-  background: #4fa8ff;
+  background: #79cfe5;
 }
 .legend-color.g80 {
-  background: #5fbe73;
+  background: #9dbfdf;
 }
 .legend-color.g90 {
-  background: #ffae3a;
+  background: #d8d0c9;
 }
 
 @media (max-width: 1400px) {
