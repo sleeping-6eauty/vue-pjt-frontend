@@ -103,19 +103,36 @@
           </table>
         </div>
 
-        <div class="pagination">
-          <button class="page-btn nav-btn" :disabled="page === 1" @click="changePage(page - 1)" title="이전">◀</button>
+        <nav class="pagination" aria-label="페이지">
+          <button
+            type="button"
+            class="page-btn"
+            :disabled="page <= 1"
+            aria-label="이전 페이지"
+            @click="changePage(page - 1)"
+          >
+            &lt;
+          </button>
           <button
             v-for="num in visiblePages"
             :key="num"
-            class="page-btn"
-            :class="{ active: page === num }"
+            type="button"
+            class="page-btn page-num"
+            :class="{ 'is-active': page === num }"
             @click="changePage(num)"
           >
             {{ num }}
           </button>
-          <button class="page-btn nav-btn" :disabled="page >= totalPages" @click="changePage(page + 1)" title="다음">▶</button>
-        </div>
+          <button
+            type="button"
+            class="page-btn"
+            :disabled="page >= totalPages"
+            aria-label="다음 페이지"
+            @click="changePage(page + 1)"
+          >
+            &gt;
+          </button>
+        </nav>
       </div>
 
       <div class="panel chart-panel">
@@ -197,10 +214,11 @@ export default {
     },
     visiblePages() {
       const pages = [];
-      const start = Math.max(1, this.page - 2);
-      const end = Math.min(this.totalPages, start + 4);
-      for (let i = start; i <= end; i += 1) {
-        pages.push(i);
+      let start = Math.max(1, this.page - 2);
+      let end = Math.min(this.totalPages, start + 4);
+      start = Math.max(1, end - 4);
+      for (let page = start; page <= end; page += 1) {
+        pages.push(page);
       }
       return pages;
     },
@@ -654,28 +672,26 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   padding-top: 20px;
   flex-shrink: 0;
 }
 
 .page-btn {
-  border: 1px solid #d6dbe2;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dee2e6;
   background: #fff;
-  min-width: 32px;
-  padding: 0 8px;
-  height: 32px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 18px;
+  line-height: 1;
+  color: #333;
 }
 
-.page-btn.active {
-  background: #032f6c;
-  color: #fff;
-  font-weight: 700;
-  border-color: #032f6c;
+.page-btn:hover:not(:disabled) {
+  background: #f1f3f5;
+  border-color: #ced4da;
 }
 
 .page-btn:disabled {
@@ -683,15 +699,22 @@ export default {
   cursor: not-allowed;
 }
 
-.page-btn.nav-btn {
-  min-width: 32px;
-  padding: 0;
-  font-size: 14px;
+.page-num {
+  min-width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-weight: 700;
+  color: #333;
+  background: #fff;
 }
 
-.page-dots {
-  color: #707070;
-  font-weight: 700;
+.page-num.is-active {
+  border-color: #002c5f;
+  color: #002c5f;
 }
 
 .chart-panel {

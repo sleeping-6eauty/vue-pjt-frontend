@@ -161,7 +161,7 @@
           &lt;
         </button>
         <button
-          v-for="page in totalPages"
+          v-for="page in visiblePages"
           :key="page"
           type="button"
           class="page-btn page-num"
@@ -250,6 +250,16 @@ export default {
     },
     totalPages() {
       return Math.max(1, Math.ceil(this.filteredRows.length / this.pageSize))
+    },
+    visiblePages() {
+      const pages = []
+      let start = Math.max(1, this.currentPage - 2)
+      let end = Math.min(this.totalPages, start + 4)
+      start = Math.max(1, end - 4)
+      for (let page = start; page <= end; page += 1) {
+        pages.push(page)
+      }
+      return pages
     },
     pagedRows() {
       const start = (this.currentPage - 1) * this.pageSize

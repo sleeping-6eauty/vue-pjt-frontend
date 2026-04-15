@@ -111,17 +111,36 @@
       </tbody>
     </table>
 
-    <div class="pagination" v-if="totalPages > 1">
-      <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
-        이전
+    <nav class="pagination" v-if="totalPages > 1" aria-label="페이지">
+      <button
+        type="button"
+        class="page-btn"
+        :disabled="currentPage <= 1"
+        aria-label="이전 페이지"
+        @click="goToPage(currentPage - 1)"
+      >
+        &lt;
       </button>
-
-      <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
-
-      <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">
-        다음
+      <button
+        v-for="page in visiblePages"
+        :key="page"
+        type="button"
+        class="page-btn page-num"
+        :class="{ 'is-active': currentPage === page }"
+        @click="goToPage(page)"
+      >
+        {{ page }}
       </button>
-    </div>
+      <button
+        type="button"
+        class="page-btn"
+        :disabled="currentPage >= totalPages"
+        aria-label="다음 페이지"
+        @click="goToPage(currentPage + 1)"
+      >
+        &gt;
+      </button>
+    </nav>
   </div>
 </template>
 
@@ -144,6 +163,18 @@ export default {
       totalCount: 0,
       hasPendingUsers: false,
       hasDeletedUsers: false
+    }
+  },
+  computed: {
+    visiblePages() {
+      const pages = []
+      let start = Math.max(1, this.currentPage - 2)
+      let end = Math.min(this.totalPages, start + 4)
+      start = Math.max(1, end - 4)
+      for (let page = start; page <= end; page += 1) {
+        pages.push(page)
+      }
+      return pages
     }
   },
   async mounted() {
@@ -505,22 +536,43 @@ export default {
   margin-top: 20px;
 }
 
-.pagination button {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  background-color: #002c5f;
-  color: white;
+.page-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dee2e6;
+  background: #fff;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #333;
 }
 
-.pagination button:disabled {
-  background-color: #cccccc;
+.page-btn:hover:not(:disabled) {
+  background: #f1f3f5;
+  border-color: #ced4da;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.page-info {
-  font-weight: 600;
+.page-num {
+  min-width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-weight: 700;
   color: #333;
+  background: #fff;
+}
+
+.page-num.is-active {
+  border-color: #002c5f;
+  color: #002c5f;
 }
 </style>
