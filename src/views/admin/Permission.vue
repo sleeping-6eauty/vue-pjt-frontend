@@ -40,7 +40,7 @@
           <th>사번</th>
           <th>이름</th>
           <th>이메일</th>
-          <th>역할</th>
+          <th>{{ currentTab === 'all' ? '역할' : '액션' }}</th>
           <th v-if="currentTab === 'all'">상태</th>
         </tr>
       </thead>
