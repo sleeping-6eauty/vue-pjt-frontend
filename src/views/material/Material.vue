@@ -121,10 +121,16 @@
                   <button
                     type="button"
                     class="btn btn-outline btn-order"
-                    :disabled="(row.purchaseNeedQty ?? 0) <= 0"
-                    @click="requestOrder(row.materialId)"
+                    @click="inboundStock(row.materialId)"
                   >
-                    주문요청
+                    입고
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline btn-order"
+                    @click="outboundStock(row.materialId)"
+                  >
+                    출고
                   </button>
                   <button
                     type="button"
@@ -181,8 +187,7 @@
 import MaterialTabs from '@/components/material/MaterialTabs.vue'
 import {
   adjustMaterialStock,
-  loadMaterials,
-  requestMaterialOrder
+  loadMaterials
 } from '../../store/material'
 
 export default {
@@ -325,13 +330,47 @@ export default {
         maximumFractionDigits: 0
       }).format(value)
     },
-    async requestOrder(materialId) {
+    parsePositiveQuantity(raw, label) {
+      const amount = Number(raw)
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error(`${label}은(는) 0보다 큰 숫자여야 합니다.`)
+      }
+      return Math.floor(amount)
+    },
+    async inboundStock(materialId) {
+      const row = this.materials.find((item) => item.materialId === materialId)
+      if (!row) return
+
+      const raw = window.prompt('입고량을 입력하세요.', '0')
+      if (raw === null) return
+
       try {
-        await requestMaterialOrder(materialId)
+        const quantity = this.parsePositiveQuantity(raw, '입고량')
+        await adjustMaterialStock(materialId, row.currentStock + quantity, 'INBOUND')
         await this.refreshMaterials()
       } catch (error) {
-        console.error('Failed to request material order:', error)
-        window.alert(error.message || '주문요청 처리에 실패했습니다.')
+        console.error('Failed to process inbound stock:', error)
+        window.alert(error.message || '입고 처리에 실패했습니다.')
+      }
+    },
+    async outboundStock(materialId) {
+      const row = this.materials.find((item) => item.materialId === materialId)
+      if (!row) return
+
+      const raw = window.prompt('출고량을 입력하세요.', '0')
+      if (raw === null) return
+
+      try {
+        const quantity = this.parsePositiveQuantity(raw, '출고량')
+        if (quantity > row.currentStock) {
+          throw new Error('출고량은 현재 보유 재고량을 초과할 수 없습니다.')
+        }
+
+        await adjustMaterialStock(materialId, row.currentStock - quantity, 'OUTBOUND')
+        await this.refreshMaterials()
+      } catch (error) {
+        console.error('Failed to process outbound stock:', error)
+        window.alert(error.message || '출고 처리에 실패했습니다.')
       }
     },
     async adjustStock(materialId) {
@@ -340,7 +379,7 @@ export default {
       if (raw === null) return
 
       try {
-        await adjustMaterialStock(materialId, raw)
+        await adjustMaterialStock(materialId, raw, 'ADJUSTMENT')
         await this.refreshMaterials()
       } catch (error) {
         console.error('Failed to adjust material stock:', error)
