@@ -199,9 +199,9 @@ export default {
         option: "",
       },
       colorMap: {
-        G70: "#79cfe5",
-        G80: "#9dbfdf",
-        G90: "#d8d0c9",
+        V70: "#79cfe5",
+        V80: "#9dbfdf",
+        V90: "#d8d0c9",
       },
     };
   },
@@ -834,13 +834,13 @@ export default {
   border-radius: 4px;
 }
 
-.legend-color.g70 {
+.legend-color.v70 {
   background: #79cfe5;
 }
-.legend-color.g80 {
+.legend-color.v80 {
   background: #9dbfdf;
 }
-.legend-color.g90 {
+.legend-color.v90 {
   background: #d8d0c9;
 }
 
