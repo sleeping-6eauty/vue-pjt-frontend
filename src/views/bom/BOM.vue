@@ -134,10 +134,9 @@ const currentPage = ref(1);
 const pageSize = ref(5);
 
 const getBadgeType = (car) => {
-  if (car === "G70") return "mint";
-  if (car === "G80") return "blue";
-  if (car === "G90") return "beige";
-  if (car === "GV80") return "beige";
+  if (car === "V70") return "mint";
+  if (car === "V80") return "blue";
+  if (car === "V90") return "beige";
   return "blue";
 };
 
